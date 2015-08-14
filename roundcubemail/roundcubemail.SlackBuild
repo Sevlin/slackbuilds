@@ -3,7 +3,7 @@
 # Slackware package build script for RoundCube
 # Home Page http://www.roundcube.net/
 
-# Copyright 2013 Mykyta Solomko, Kyiv, Ukraine, <sev (at) nix.org.ua>
+# Copyright 2013-2015 Mykyta Solomko, Kyiv, Ukraine, <sev@nix.org.ua>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -35,7 +35,7 @@ PHPUSER=${PHPUSER:-root}
 PHPGROUP=${PHPGROUP:-apache}
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/build}
+TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
