@@ -22,7 +22,7 @@
 
 PRGNAM=jabberd2
 SRCNAM=jabberd
-VERSION=${VERSION:-2.3.2}
+VERSION=${VERSION:-2.3.3}
 ARCH=${ARCH:-x86_64}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
