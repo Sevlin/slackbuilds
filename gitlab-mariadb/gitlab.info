@@ -1,0 +1,7 @@
+PRGNAM="gitlab"
+VERSION="7.13.5"
+HOMEPAGE="https://gitlab.com"
+DOWNLOAD="https://gitlab.com/gitlab-org/gitlab-ce/repository/archive.tar.gz?ref=v7.13.5"
+MD5SUM="a5ebe0ed4ee4bdb1585c8f763dec94b2"
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
