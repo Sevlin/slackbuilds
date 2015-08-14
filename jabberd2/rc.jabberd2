@@ -1,0 +1,242 @@
+#!/bin/bash
+
+# Start/stop/restart jabberd2 XMPP server.
+# Written by Mykyta Solomko <sev@nix.org.ua> Ukraine, Kyiv, 2014
+
+############################# ! WARNING ! ##################################
+#                                                                          #
+# If you wish to override some of these variables, DO NOT edit this script #
+# use /etc/default/jabberd2 instead                                        #
+#                                                                          #
+############################################################################
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# Binaries
+readonly ROUTER='router'
+readonly SM='sm'
+readonly C2S='c2s'
+readonly S2S='s2s'
+
+# User-defined
+[[ -r /etc/default/jabberd2 ]] \
+    && source /etc/default/jabberd2
+
+
+## Overridable variables
+JABBERD2USER=${JABBERD2USER:-'%JABBERDUSER%'}
+PIDDIR=${PIDDIR:-'/var/run/jabberd2'}
+CPU_NICE=${CPU_NICE:=10}
+IO_NICE=${IO_NICE:=0}
+
+as_user()
+{
+    local me=$(whoami)
+    local cmd=${1}
+    local msg=''
+
+    if [ "${me}" == "${JABBERD2USER}" ]; then
+        msg=$(bash -c "${cmd}" 2>&1) &
+    else
+        msg=$(exec sudo -u "${JABBERD2USER}" ${cmd} 2>&1) &
+    fi
+
+    [[ ! -z "${msg}" ]] \
+        && echo "${msg}"
+
+    unset me cmd
+}
+
+is_number()
+{
+    local tmp=${1}
+
+    [[ ${1} =~ ^[0-9]+ ]] \
+        && echo 'yes' \
+        || echo 'no'
+
+    unset tmp
+}
+
+get_pid()
+{
+    local proc="${1}"
+
+    echo $(pgrep -U ${JABBERD2USER} ${proc})
+
+    unset proc
+}
+
+is_running()
+{
+    local bin=${1}
+
+    [[ ! -z "$(get_pid ${bin})" ]] \
+        && echo 'yes' \
+        || echo 'no'
+
+    unset bin
+}
+
+
+jabberd2_renice()
+{
+    # CPU renice
+    if [ "$(is_number ${CPU_NICE})" == 'yes' ] \
+    && [ ${CPU_NICE} -ge -20 ] \
+    && [ ${CPU_NICE} -le 19  ]; then
+        # Renice self, inceness will be inherited by child processes
+        [[ ${CPU_NICE} -ne 10 ]] \
+            && nice -c ${CPU_NICE} -p ${$}
+    else
+        echo "Wrong CPU niceness level: ${CPU_NICE}" 1>&2
+        echo "Please consult 'man nice' for more information." 1>&2
+    fi
+
+    # IO renice
+    if [ "$(is_number ${IO_NICE})" == 'yes' ] \
+    && [ ${IO_NICE} -ge 0 ] \
+    && [ ${IO_NICE} -le 7 ]; then
+        # Renice self, niceness will be inherited by child processes
+        [[ ${IO_NICE} -ne 0 ]] \
+            && ionice -c ${IO_NICE} -p ${$}
+    else
+        echo "Wrong I/O niceness level: ${IO_NICE}" 1>&2
+        echo "Please consult 'man ionice' for more information."
+    fi
+}
+
+jabberd2_prestart()
+{
+    # Check user
+    if ! grep -qo ^${JABBERD2USER}: /etc/passwd; then
+        echo "You must have a \"%JABBERDUSER%\" user to run Jabberd2 daemon." 1>&2
+        echo "Please add user using commands below or specify existing user in /etc/default/jabberd2." 1>&2
+        echo "" 1>&2
+        echo " # groupadd -g %JABBERDGID% %JABBERDGROUP%" 1>&2
+        echo " # useradd -u %JABBERDUID% -g %JABBERDGROUP% -c 'Jabber server' -d /var/lib/jabberd2 -s /bin/false ${JABBERDUSER}"
+        exit 1
+    fi
+
+    for PROGRAM in ${ROUTER} ${SM} ${C2S} ${S2S}; do
+
+        # Check for running instances
+        if [ "$(is_running ${PROGRAM})" == 'yes' ]; then
+            echo "${PROGRAM} instance already running!" 1>&2
+            exit 1
+        fi
+
+        # Access rights and binary availability
+        if [ ! -x "/usr/bin/${PROGRAM}" ]; then
+            echo "Missing executable or insufficient execution priveleges for /usr/bin/${PROGRAM}!" 1>&2
+            exit 1
+        fi
+
+        # Configuration files
+        if [ ! -r "/etc/jabberd2/${PROGRAM}.xml" ]; then
+            echo "Configuration file /etc/jabberd2/${PROGRAM}.xml is missing!" 1>&2
+            exit 1
+        fi
+
+    done
+}
+
+jabberd2_start()
+{
+    jabberd2_prestart
+    jabberd2_renice
+
+    cd ${SRVDIR}
+
+    echo "Starting jabberd2 server:"
+
+    for PROGRAM in ${ROUTER} ${SM} ${C2S} ${S2S}; do
+        echo -n "  /usr/bin/${PROGRAM} -c /etc/jabberd2/${PROGRAM}.xml ..."
+        as_user "/usr/bin/${PROGRAM} -c /etc/jabberd2/${PROGRAM}.xml"
+        sleep 1
+
+        if [[ "$(is_running ${PROGRAM})" == 'yes' ]]; then
+            echo ' done'
+        else
+            echo ' fail'
+        fi
+    done
+
+}
+
+jabberd2_stop()
+{
+    echo "Shutting down jabberd2 server:"
+
+    for PROGRAM in ${S2S} ${C2S} ${SM} ${ROUTER}; do
+
+        # Terminate running instances
+        if [ "$(is_running ${PROGRAM})" == 'yes' ]; then
+
+            # Terminate
+            if [ -f "${PIDDIR}/${PROGRAM}.pid" ] \
+            && [ ! -z "$(cat ${PIDDIR}/${PROGRAM}.pid)" ] \
+            && [ $(is_number $(cat ${PIDDIR}/${PROGRAM}.pid)) == 'yes' ] \
+            && [ "$(get_pid ${PROGRAM})" -eq "$(cat ${PIDDIR}/${PROGRAM}.pid)" ]; then
+                echo -n "  ${PROGRAM}..."
+
+                # Kill
+                kill -TERM $(cat ${PIDDIR}/${PROGRAM}.pid)
+
+                # Wait
+                while [ "$(is_running ${PROGRAM})" == "yes" ]; do
+                    echo -n '.'
+                    sleep 1
+                done
+                echo ' done'
+
+                # Clean-up
+                rm -f "${PIDDIR}/${PROGRAM}.pid"
+
+            else
+                echo -n "Attempting ${PROGRAM}: pkill -TERM -U ${JABBERD2USER} ${PROGRAM}..."
+
+                pkill -TERM -U ${JABBERD2USER} ${PROGRAM}
+
+                # Wait
+                while [ "$(is_running ${PROGRAM})" == "yes" ]; do
+                    echo -n '.'
+                    sleep 1
+                done
+                echo ' done'
+
+                [[ -f ${PIDDIR}/${PROGRAM}.pid ]] \
+                    && rm -f "${PIDDIR}/${PROGRAM}.pid"
+            fi
+
+        else
+            echo "  ${PROGRAM} is not running"
+        fi
+
+    done
+}
+
+jabberd2_restart()
+{
+    jabberd2_stop
+    jabberd2_start
+}
+
+jabberd2_status()
+{
+    echo "Status:"
+    for PROGRAM in ${ROUTER} ${SM} ${C2S} ${S2S}; do
+        [[ "$(is_running ${PROGRAM})" == 'yes' ]] \
+            && echo "  ${PROGRAM} is running." \
+            || echo "  ${PROGRAM} is down."
+    done
+}
+
+case "${1}" in
+    'start'   ) jabberd2_start   ;;
+    'stop'    ) jabberd2_stop    ;;
+    'restart' ) jabberd2_restart ;;
+    'status'  ) jabberd2_status  ;;
+    * ) echo "${0} start|stop|restart|status" 1>&2; exit 1 ;;
+esac

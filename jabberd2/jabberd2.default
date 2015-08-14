@@ -1,0 +1,23 @@
+## /etc/default/jabberd2:
+
+# Daemon's user
+#JABBERD2USER='jabber'
+
+# CPU niceness
+#
+# CPU priority range
+# must be from 20 to -19
+# -20 - high
+#  10 - default
+#  19 - low
+#NICE=10
+
+# I/O niceness
+#
+# I/O priority range
+# must be from 0 to 7
+#
+# 0 - high (default)
+# 7 - low
+#IONICE=0
+
