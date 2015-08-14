@@ -1,0 +1,146 @@
+#!/bin/sh
+
+# Slackware build script for GitLab-shell
+
+# Copyright 2015 Mykyta Solomko, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=gitlab-shell
+VERSION=${VERSION:-2.6.3}
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+ARCH='noarch'
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build/${ARCH}}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-2}
+
+DOCROOT=${DOCROOT:-var/www}
+PRGHOME=${PRGHOME:-var/lib/gitlab}
+LOGDIR=${LOGDIR:-var/log/gitlab}
+GITLABUSER=${GITLABUSER:-git}
+GITLABGROUP=${GITLABGROUP:-git}
+GITLABUID=${GITLABUID:-507}
+GITLABGID=${GITLABGID:-507}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+set -e
+
+if [ "${PKGSUFFIX}" = 'pgsql' ]; then
+	SKIP_DB='mysql'
+elif [ "${PKGSUFFIX}" = 'mariadb' ]; then
+	SKIP_DB='postgresql'
+fi
+
+# Check if the gitlab user and group exist. If not, then bail.
+if ! grep -q "^${GITLABGROUP}:" /etc/group ; then
+    echo "  You must have a \"${GITLABGROUP}\" group to run this script."
+    echo "    # groupadd -g ${GITLABGID} ${GITLABGROUP}"
+    exit 1
+fi
+
+if ! grep -q "^${GITLABUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${GITLABUSER}\" user to run this script."
+    echo "    # useradd -u ${GITLABUID} -g ${GITLABGROUP} -d /${PRGHOME%/} -s /bin/bash -c \"User for GitLab\" ${GITLABUSER}"
+    exit 1
+fi
+
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/v$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Install GitLab-shell into /var/lib/gitlab
+mkdir -p $PKG/$PRGHOME
+cp -ar $TMP/$PRGNAM-$VERSION/* \
+       $PKG/$PRGHOME
+
+# Change owner
+chown -R root:$GITLABGROUP $PKG/$PRGHOME
+
+# Prepare directories
+mkdir -p $PKG/var/lib
+install -d -m 0750 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PRGHOME
+install -d -m 0770 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PRGHOME/repositories \
+	$PKG/$PRGHOME/hooks
+install -d -m 0700 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PRGHOME/.ssh
+
+# Documentation
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp CHANGELOG LICENSE README.md VERSION \
+	$PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Configuration files
+sed -e "s|user: git|user: ${GITLABUSER}|" \
+    -e "s|# log_file: \"/home/git/gitlab-shell/gitlab-shell.log\"|log_file: \"/${LOGDIR%/}/gitlab-shell.log\"|" \
+    -e "s|secret_file: \"/home/git/gitlab-shell/.gitlab_shell_secret\"|secret_file: \"/${PRGHOME%/}/.gitlab_shell_secret\"|" \
+    -e "s|/home/git|/${PRGHOME%/}|g" \
+    -e 's|audit_usernames: false|audit_usernames: true|' \
+       ${PKG}/$PRGHOME/config.yml.example \
+     > ${PKG}/$PRGHOME/config.yml.new
+
+# Installation scripts
+mkdir -p $PKG/install
+sed -e "s|%GITLABGID%|${GITLABGID}|g"     \
+    -e "s|%GITLABGROUP%|${GITLABGROUP}|g" \
+    -e "s|%GITLABUID%|${GITLABUID}|g"     \
+    -e "s|%GITLABUSER%|${GITLABUSER}|g"   \
+    -e "s|%PRGHOME%|${PRGHOME%/}|g"      \
+    ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+
+for INSTFILE in 'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

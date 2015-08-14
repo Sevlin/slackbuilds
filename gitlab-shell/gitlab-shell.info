@@ -1,0 +1,7 @@
+PRGNAM="gitlab-shell"
+VERSION="2.6.3"
+HOMEPAGE="https://gitlab.com"
+DOWNLOAD="https://github.com/gitlabhq/gitlab-shell/archive/v2.6.3.tar.gz"
+MD5SUM="0e5e119aadcbdaf5d6fd5b3a9c070190"
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
