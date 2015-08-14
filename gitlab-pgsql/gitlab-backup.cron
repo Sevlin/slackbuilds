@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ -r /etc/default/gitlab ]; then
+	source /etc/default/gitlab
+fi
+
+GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
+BUNDLE_BIN=${BUNDLE_BIN:-/usr/bin/bundle}
+DOCROOT=${DOCROOT:-%DOCROOT%}
+RAILS_ENV=${RAILS_ENV:-production}
+
+ME="$(whoami)"
+
+as_user()
+{
+	if [ "${ME}" != "${GITLAB_USER}" ]; then
+		su -l ${GITLAB_USER} -c "${@}"
+	else
+		bash -c "${@}"
+	fi
+}
+
+as_user "cd ${DOCROOT} && ${BUNDLE_BIN} exec rake gitlab:backup:create"
+
+exit ${?}
+

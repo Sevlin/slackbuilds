@@ -1,0 +1,280 @@
+#!/bin/sh
+
+# Slackware build script for GitLab
+
+# Copyright 2015 Mykyta Solomko, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=gitlab
+VERSION=${VERSION:-7.13.5}
+PKGSUFFIX=${PKGSUFFIX-pgsql}
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+SRCNAM=gitlab-ce.git
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build/${ARCH}}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-2}
+
+WWWROOT=${WWWROOT:-var/www}
+PRGHOME=${PRGHOME:-var/lib/gitlab}
+PIDDIR=${PIDDIR:-var/run/gitlab}
+LOGDIR=${LOGDIR:-var/log/gitlab}
+GITLABUSER=${GITLABUSER:-git}
+GITLABGROUP=${GITLABGROUP:-git}
+GITLABUID=${GITLABUID:-507}
+GITLABGID=${GITLABGID:-507}
+RAILS_ENV=${RAILS_ENV:-'production'}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+set -e
+
+if [ "${PKGSUFFIX}" = 'pgsql' ]; then
+	SKIP_DB='mysql'
+elif [ "${PKGSUFFIX}" = 'mariadb' ]; then
+	SKIP_DB='postgresql'
+fi
+
+# Check if the gitlab user and group exist. If not, then bail.
+if ! grep -q "^${GITLABGROUP}:" /etc/group ; then
+    echo "  You must have a \"${GITLABGROUP}\" group to run this script."
+    echo "    # groupadd -g ${GITLABGID} ${GITLABGROUP}"
+    exit 1
+fi
+
+if ! grep -q "^${GITLABUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${GITLABUSER}\" user to run this script."
+    echo "    # useradd -u ${GITLABUID} -g ${GITLABGROUP} -d /var/lib/gitlab -s /bin/bash -c \"User for GitLab\" ${GITLABUSER}"
+    exit 1
+fi
+
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+mv $SRCNAM $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+echo echo "gem: --no-rdoc --no-ri --no-user-install" \
+	> $TMP/$PRGNAM-$VERSION/.gemrc
+
+# Link nokogiri gem to libxml2 provided by system,
+# otherwise it'll fail to build
+HOME=$TMP/$PRGNAM-$VERSION \
+bundle config build.nokogiri --use-system-libraries
+
+# Install gems
+HOME=$TMP/$PRGNAM-$VERSION \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+LDFLAGS="-ldl" \
+bundle install -j${NUMJOBS} --no-cache --deployment --without development test ${SKIP_DB} aws kerberos
+
+# Cleanup
+HOME=$TMP/$PRGNAM-$VERSION \
+bundle clean
+
+# Remove git and object files left after gems installation
+find $TMP/$PRGNAM-$VERSION -type f \( -name '*.o' \
+                         	   -o -name '.gitkeep' \
+	                           -o -name '.gitignore' \
+			           -o -name '.gitattributes' \
+			           -o -name '.gitmodules' \
+			           \) -delete
+
+# Install GitLab into $WWWROOT/gitlab
+mkdir -p $PKG/$WWWROOT
+cp -a $TMP/$PRGNAM-$VERSION \
+      $PKG/$WWWROOT/$PRGNAM
+
+# Change owner
+chown -R root:$GITLABGROUP $PKG/$WWWROOT/$PRGNAM
+
+# Strip ELF binaries
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Prepare directories.
+chmod 0775 $PKG/$WWWROOT/$PRGNAM/public/uploads
+mkdir -p $PKG/var/{lib,log,run}
+install -d -m 0750 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PRGHOME $PKG/$LOGDIR \
+	$PKG/$WWWROOT/$PRGNAM/satellites
+install -d -m 0755 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PIDDIR
+install -d -m 0770 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$PRGHOME/backups
+
+# Documentation
+mkdir -p $PKG/usr/doc
+mv $PKG/$WWWROOT/$PRGNAM/doc $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Configuration files
+sed -i -e 's|tmp/pids|pids|g' \
+          $PKG/$WWWROOT/$PRGNAM/bin/background_jobs \
+	  $PKG/$WWWROOT/$PRGNAM/bin/web
+
+sed -e "s|# user: git|user: ${GITLABUSER}|" \
+    -e "s|/home/git/repositories|/${PRGHOME%/}/repositories|g" \
+    -e "s|/home/git/gitlab-satellites|/${WWWROOT%/}/${PRGNAM}/satellites|g" \
+    -e "s|/home/git/gitlab-shell|/${PRGHOME%/}|g" \
+    -e "s|/home/git/gitlab|/${WWWROOT%/}/${PRGNAM}|g" \
+    -e "s|tmp/backups|backups|g" \
+       $PKG/$WWWROOT/$PRGNAM/config/gitlab.yml.example \
+     > $PKG/$WWWROOT/$PRGNAM/config/gitlab.yml.new
+
+sed -e "s|/home/git/gitlab/tmp/sockets|/${PIDDIR%/}|g" \
+    -e "s|/home/git/gitlab/tmp/pids|/${PIDDIR%/}|g" \
+    -e "s|/home/git/gitlab/log|/${LOGDIR%/}|g" \
+    -e "s|/home/git/gitlab|/${WWWROOT%/}/${PRGNAM}|g" \
+    -e "s|timeout 30|timeout 300|" \
+      $PKG/$WWWROOT/$PRGNAM/config/unicorn.rb.example \
+    > $PKG/$WWWROOT/$PRGNAM/config/unicorn.rb.new
+
+sed -e 's|production: unix:/var/run/redis/redis.sock|production: redis://localhost:6379|' \
+      $PKG/$WWWROOT/$PRGNAM/config/resque.yml.example \
+    > $PKG/$WWWROOT/$PRGNAM/config/resque.yml.new
+
+cat $PKG/$WWWROOT/$PRGNAM/config/initializers/rack_attack.rb.example \
+  > $PKG/$WWWROOT/$PRGNAM/config/initializers/rack_attack.rb.new
+
+mv $PKG/$WWWROOT/$PRGNAM/config.ru \
+   $PKG/$WWWROOT/$PRGNAM/config.ru.new
+
+mv $PKG/$WWWROOT/$PRGNAM/config/environments/production.rb \
+   $PKG/$WWWROOT/$PRGNAM/config/environments/production.rb.new
+
+if [ "${PKGSUFFIX}" = 'pgsql' ]; then
+	cat $PKG/$WWWROOT/$PRGNAM/config/database.yml.postgresql \
+	  > $PKG/$WWWROOT/$PRGNAM/config/database.yml.new
+elif [ "${PKGSUFFIX}" = 'mariadb' ]; then
+	cat $PKG/$WWWROOT/$PRGNAM/config/database.yml.mysql \
+	  > $PKG/$WWWROOT/$PRGNAM/config/database.yml.new
+fi
+
+( cd $PKG/$WWWROOT/$PRGNAM; \
+     ln -sf ../../../usr/doc/$PRGNAM-$VERSION doc;\
+     rm --preserve-root -rf tmp log; \
+     ln -sf ../../../var/log/$PRGNAM log; \
+     ln -sf /tmp tmp; \
+     ln -sf ../../run/$PRGNAM pids; \
+     ln -sf ../../run/$PRGNAM sockets; \
+     ln -sf ../../lib/$PRGNAM/backups backups; \
+cd - )
+
+# BASH settings
+cat > $PKG/$PRGHOME/.bashrc.new << EOF
+if [ -r \${HOME}/.bash_profile ]; then
+	source \${HOME}/.bash_profile
+fi
+EOF
+
+cat > $PKG/$PRGHOME/.bash_profile.new << EOF
+if [ -r /etc/default/$PRGNAM ]; then
+	source /etc/default/$PRGNAM
+fi
+
+export RAILS_ENV=\${RAILS_ENV:-"${RAILS_ENV}"}
+EOF
+
+chown $GITLABUSER:$GITLABGROUP \
+      $PKG/$PRGHOME/.bashrc.new \
+      $PKG/$PRGHOME/.bash_profile.new
+
+# Install accompanying scripts and configs.
+mkdir -p $PKG/etc/rc.d \
+	 $PKG/etc/default \
+	 $PKG/etc/cron.daily \
+	 $PKG/etc/logrotate.d
+install -m 0644 $CWD/rc.gitlab-unicorn \
+	        $PKG/etc/rc.d/rc.gitlab-unicorn.new
+install -m 0644 $CWD/rc.gitlab-sidekiq \
+	        $PKG/etc/rc.d/rc.gitlab-sidekiq.new
+install -m 0644 $CWD/gitlab.default \
+		$PKG/etc/default/gitlab.new
+install -m 0644 $CWD/gitlab-backup.cron \
+		$PKG/etc/cron.daily/gitlab-backup.cron.new
+install -m 0644 $CWD/gitlab.logrotate \
+		$PKG/etc/logrotate.d/gitlab.new
+sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
+       -e "s|%DOCROOT%|/${WWWROOT%/}/${PRGNAM}|g" \
+       -e "s|%PIDDIR%|/${PIDDIR%/}|g" \
+       -e "s|%LOGDIR%|/${LOGDIR%/}|g" \
+       -e "s|%RAILS_ENV%|${RAILS_ENV}|g" \
+	 $PKG/etc/rc.d/rc.gitlab-unicorn.new \
+	 $PKG/etc/rc.d/rc.gitlab-sidekiq.new \
+	 $PKG/etc/default/gitlab.new \
+	 $PKG/etc/cron.daily/gitlab-backup.cron.new \
+	 $PKG/etc/logrotate.d/gitlab.new
+
+# Installation scripts
+mkdir -p $PKG/install
+sed -e "s|%GITLABGID%|${GITLABGID}|g"     \
+    -e "s|%GITLABGROUP%|${GITLABGROUP}|g" \
+    -e "s|%GITLABUID%|${GITLABUID}|g"     \
+    -e "s|%GITLABUSER%|${GITLABUSER}|g"   \
+    -e "s|%DOCROOT%|${WWWROOT%/}/${PRGNAM}|g" \
+    -e "s|%GITLABHOME%|${PRGHOME%/}|g" \
+    ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+
+for INSTFILE in 'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$PKGSUFFIX-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
