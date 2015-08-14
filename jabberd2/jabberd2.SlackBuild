@@ -20,6 +20,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+set -e
+
 PRGNAM=jabberd2
 SRCNAM=jabberd
 VERSION=${VERSION:-2.3.3}
@@ -84,26 +86,36 @@ fi
 # PostgreSQL support
 if [ "${PGSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-pgsql"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-pgsql"
 fi
 
 # MySQL support
 if [ "${MYSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-mysql"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-mysql"
 fi
 
 # SQLite support
 if [ "${SQLITE}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-sqlite"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-sqlite"
 fi
 
 # Berkley DB support
 if [ "${BDB}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-db"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-db"
 fi
 
 # LDAP support
 if [ "${LDAP}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-ldap"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-ldap"
 fi
 
 # Filesystem storage support
@@ -171,9 +183,8 @@ install -v -m 0644 \
 
 # Rename configuration files
 find $PKG/etc/${PRGNAM} -type f \
-    \( -name '*.xml'  -exec mv {} {}.new \; \) \
- -o \( -name '*.cfg'  -exec mv {} {}.new \; \) \
- -o \( -name '*.conf' -exec mv {} {}.new \; \)
+	\( -name '*.xml' -o -name '*.cfg' -o -name '*.conf' \) \
+	-exec mv {} {}.new \;
 
 # Remove junk
 rm -rf ${PKG}/etc/init \
@@ -195,13 +206,14 @@ sed -i \
     -e 's|var/lib/jabberd/log/|var/log/jabberd2/|g' \
     -e 's|var/lib/jabberd/db|var/lib/jabberd2/db|g' \
     -e 's|var/lib/jabberd/stats|var/lib/jabberd2/stats|g' \
-                           ${PKG}/etc/jabberd2/*.xml.new
+    ${PKG}/etc/jabberd2/*.xml.new
 
 # Copy docs
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
     AUTHORS COPYING ChangeLog INSTALL NEWS README README.config README.protocol \
-    README.win32 TODO UPGRADE \
-          $PKG/usr/doc/$PRGNAM-$VERSION
+    README.win32 TODO \
+    $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Tools
 mkdir -p ${PKG}/usr/share/jabberd2/
