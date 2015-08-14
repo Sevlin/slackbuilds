@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# GITLAB_USER='%GITLABUSER%'
+
+# BUNDLE_BIN='/usr/bin/bundle'
+
+# DOCROOT='%DOCROOT%'
+# LOGDIR='%LOGDIR%'
+
+# UNICORN_PIDFILE='%PIDDIR%/unicorn.pid'
+# SIDEKIQ_PIDFILE='%PIDDIR%/sidekiq.pid'
+
+# RAILS_ENV='%RAILS_ENV%'
+

@@ -6,14 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
             |-----handy-ruler------------------------------------------------------|
-gitlab-pgsql: GitLab (GitHub-like git repository manager)
-gitlab-pgsql:
-gitlab-pgsql: GitLab is a web-based Git repository manager with wiki and issue
-gitlab-pgsql: tracking features.
-gitlab-pgsql: 
-gitlab-pgsql: Homepage: https://gitlab.com/
-gitlab-pgsql:
-gitlab-pgsql:
-gitlab-pgsql:
-gitlab-pgsql:
-gitlab-pgsql:
+gitlab-mariadb: GitLab (GitHub-like git repository manager)
+gitlab-mariadb:
+gitlab-mariadb: GitLab is a web-based Git repository manager with wiki and issue
+gitlab-mariadb: tracking features.
+gitlab-mariadb: 
+gitlab-mariadb: Homepage: https://gitlab.com/
+gitlab-mariadb:
+gitlab-mariadb:
+gitlab-mariadb:
+gitlab-mariadb:
+gitlab-mariadb:
