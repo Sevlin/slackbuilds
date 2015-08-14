@@ -7,7 +7,10 @@ fi
 GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
 BUNDLE_BIN=${BUNDLER_BIN:-/usr/bin/bundle}
 DOCROOT=${DOCROOT:-%DOCROOT%}
-SIDEKIQ_PIDFILE=${SIDEKIQ_PIDFILE:-%PIDDIR%/sidekiq.pid}
+PIDDIR=${PIDDIR:-%PIDDIR%}
+LOGDIR=${LOGDIR:-%LOGDIR%}
+SIDEKIQ_LOGFILE=${LOGDIR%/}/sidekiq.log
+SIDEKIQ_PIDFILE=${PIDDIR%/}/sidekiq.pid
 RAILS_ENV=${RAILS_ENV:-'%RAILS_ENV%'}
 
 ME="$(whoami)"
@@ -23,7 +26,7 @@ as_user()
 
 glsidekiq_start()
 {
-        CMD="${BUNDLE_BIN} exec \"sidekiq -q post_receive -q mailer -q system_hook -q project_web_hook -q gitlab_shell -q common -q default -q archive_repo -e ${RAILS_ENV} -L /var/log/gitlab/sidekiq.log\""
+        CMD="${BUNDLE_BIN} exec \"sidekiq -q post_receive -q mailer -q system_hook -q project_web_hook -q gitlab_shell -q common -q default -q archive_repo -e ${RAILS_ENV} -P ${SIDEKIQ_PIDFILE} -L ${SIDEKIQ_LOGFILE}\""
         echo "Starting GitLab Sidekiq: ${CMD}"
         CMD="cd ${DOCROOT} && ${CMD}"
         as_user "${CMD}" 
