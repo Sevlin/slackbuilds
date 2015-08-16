@@ -1,0 +1,8 @@
+PRGNAM="libsrs_alt"
+VERSION="1.0"
+HOMEPAGE="https://opsec.eu/src/srs/"
+DOWNLOAD="https://opsec.eu/src/srs/libsrs_alt-1.0.tar.bz2"
+MD5SUM="123814706b652be106b3800fd4225405"
+REQUIRES=""
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
