@@ -2,7 +2,7 @@
 
 # Slackware build script for mu-conference
 
-# Copyright 2011 Mykyta Solomko
+# Copyright 2011-2015, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
 #
 # Permission to use, copy, modify, and distribute this software for any purpose
@@ -34,7 +34,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/build}
+TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=${TMP}/package-${PRGNAM}-${VERSION}
 OUTPUT=${OUTPUT:-/tmp}
 
