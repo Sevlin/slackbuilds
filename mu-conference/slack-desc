@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+mu-conference: MU-Conference (provides an implementation of XEP-0045)
+mu-conference:
+mu-conference: MU-Conference is a component for a Jabber server. It provides an
+mu-conference: implementation of XEP-0045 which allow the creation of multi-users
+mu-conference: chat.
+mu-conference:
+mu-conference: Homepage: http://gna.org/projects/mu-conference/
+mu-conference:
+mu-conference:
+mu-conference:
+mu-conference:

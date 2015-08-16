@@ -1,0 +1,228 @@
+#!/bin/bash
+
+# Start/stop/restart multiuser conference server.
+# Written by Mykyta Solomko <sev@nix.org.ua> Ukraine, Kyiv, 2014
+
+############################# ! WARNING ! ##################################
+#                                                                          #
+# If you wish to override some of these variables, DO NOT edit this script #
+# use /etc/default/mu-conference instead                                   #
+#                                                                          #
+############################################################################
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# Binaries and configs
+readonly MUC_BIN='mu-conference'
+readonly MUC_CNF='muc.xml'
+
+# User-defined
+[[ -r /etc/default/jabberd2 ]] \
+    && source /etc/default/jabberd2
+
+
+## Overridable variables
+JABBERD2USER=${JABBERD2USER:-'%JABBERDUSER%'}
+PIDDIR=${PIDDIR:-'/var/run/jabberd2'}
+CPU_NICE=${CPU_NICE:=10}
+IO_NICE=${IO_NICE:=0}
+
+as_user()
+{
+    local me=$(whoami)
+    local cmd=${1}
+    local msg=''
+
+    if [ "${me}" == "${JABBERD2USER}" ]; then
+        msg=$(bash -c "${cmd}" 2>&1) &
+    else
+        msg=$(exec sudo -u "${JABBERD2USER}" ${cmd} 2>&1) &
+    fi
+
+    [[ ! -z "${msg}" ]] \
+        && echo "${msg}"
+
+    unset me cmd msg
+}
+
+is_number()
+{
+    local tmp=${1}
+
+    [[ ${1} =~ ^[0-9]+ ]] \
+        && echo 'yes' \
+        || echo 'no'
+
+    unset tmp
+}
+
+get_pid()
+{
+    local proc="${1}"
+
+    echo $(pgrep -U ${JABBERD2USER} ${proc})
+
+    unset proc
+}
+
+is_running()
+{
+    local bin=${1}
+
+    [[ ! -z "$(get_pid ${bin})" ]] \
+        && echo 'yes' \
+        || echo 'no'
+
+    unset bin
+}
+
+
+muc_renice()
+{
+    # CPU renice
+    if [ "$(is_number ${CPU_NICE})" == 'yes' ] \
+    && [ ${CPU_NICE} -ge -20 ] \
+    && [ ${CPU_NICE} -le 19  ]; then
+        # Renice self, inceness will be inherited by child processes
+        [[ ${CPU_NICE} -ne 10 ]] \
+            && nice -c ${CPU_NICE} -p ${$}
+    else
+        echo "Wrong CPU niceness level: ${CPU_NICE}" 1>&2
+        echo "Please consult 'man nice' for more information." 1>&2
+    fi
+
+    # IO renice
+    if [ "$(is_number ${IO_NICE})" == 'yes' ] \
+    && [ ${IO_NICE} -ge 0 ] \
+    && [ ${IO_NICE} -le 7 ]; then
+        # Renice self, niceness will be inherited by child processes
+        [[ ${IO_NICE} -ne 0 ]] \
+            && ionice -c ${IO_NICE} -p ${$}
+    else
+        echo "Wrong I/O niceness level: ${IO_NICE}" 1>&2
+        echo "Please consult 'man ionice' for more information."
+    fi
+}
+
+muc_prestart()
+{
+    # Check user
+    if ! grep -qo ^${JABBERD2USER}: /etc/passwd; then
+        echo "You must have a \"%JABBERDUSER%\" user to run mu-conference daemon." 1>&2
+        echo "Please add user using commands below or specify existing user in /etc/default/jabberd2." 1>&2
+        echo "" 1>&2
+        echo " # groupadd -g %JABBERDGID% %JABBERDGROUP%" 1>&2
+        echo " # useradd -u %JABBERDUID% -g %JABBERDGROUP% -c 'Jabber server' -d /var/lib/jabberd2 -s /bin/false ${JABBERDUSER}"
+        exit 1
+    fi
+
+    # Check for running instances
+    if [ "$(is_running ${MUC_BIN})" == 'yes' ]; then
+        echo "${MUC_BIN} instance already running!" 1>&2
+        exit 1
+    fi
+
+    # Access rights and binary availability
+    if [ ! -x "/usr/bin/${MUC_BIN}" ]; then
+        echo "Missing executable or insufficient execution priveleges for /usr/bin/${MUC_BIN}!" 1>&2
+        exit 1
+    fi
+
+    # Configuration files
+    if [ ! -r "/etc/jabberd2/${MUC_CNF}" ]; then
+        echo "Configuration file /etc/jabberd2/${MUC_CNF} is missing!" 1>&2
+        exit 1
+    fi
+}
+
+muc_start()
+{
+    muc_prestart
+    muc_renice
+
+    cd ${SRVDIR}
+
+    echo "Starting mu-conference server:"
+
+    echo -n "  /usr/bin/${MUC_BIN} -c /etc/jabberd2/${MUC_CNF} ..."
+    as_user "/usr/bin/${MUC_BIN} -c /etc/jabberd2/${MUC_CNF} &> /dev/null"
+    sleep 1
+
+    if [[ "$(is_running ${MUC_BIN})" == 'yes' ]]; then
+        echo ' done'
+    else
+        echo ' fail'
+    fi
+
+}
+
+muc_stop()
+{
+    echo "Shutting down mu-conference server:"
+
+    # Terminate running instances
+    if [ "$(is_running ${MUC_BIN})" == 'yes' ]; then
+
+        # Terminate
+        if [ -f "${PIDDIR}/${MUC_BIN}.pid" ] \
+        && [ ! -z "$(cat ${PIDDIR}/${MUC_BIN}.pid)" ] \
+        && [ $(is_number $(cat ${PIDDIR}/${MUC_BIN}.pid)) == 'yes' ] \
+        && [ "$(get_pid ${MUC_BIN})" -eq "$(cat ${PIDDIR}/${MUC_BIN}.pid)" ]; then
+            echo -n "  ${MUC_BIN}..."
+
+            # Kill
+            kill -TERM $(cat ${PIDDIR}/${MUC_BIN}.pid)
+
+            # Wait
+            while [ "$(is_running ${MUC_BIN})" == "yes" ]; do
+                echo -n '.'
+                sleep 1
+            done
+            echo ' done'
+
+            # Clean-up
+            rm -f "${PIDDIR}/${MUC_BIN}.pid"
+
+        else
+            echo -n "Attempting ${MUC_BIN}: pkill -TERM -U ${JABBERD2USER} ${MUC_BIN}..."
+
+            pkill -TERM -U ${JABBERD2USER} ${MUC_BIN}
+
+            # Wait
+            while [ "$(is_running ${MUC_BIN})" == "yes" ]; do
+                echo -n '.'
+                sleep 1
+            done
+            echo ' done'
+
+            [[ -f ${PIDDIR}/${MUC_BIN}.pid ]] \
+                && rm -f "${PIDDIR}/${MUC_BIN}.pid"
+        fi
+
+    else
+        echo "  ${MUC_BIN} is not running"
+    fi
+}
+
+muc_restart()
+{
+    muc_stop
+    muc_start
+}
+
+muc_status()
+{
+    echo "Status:"
+    [[ "$(is_running ${MUC_BIN})" == 'yes' ]] \
+        && echo "  ${MUC_BIN} is running." \
+        || echo "  ${MUC_BIN} is down."
+}
+
+case "${1}" in
+    'start'   ) muc_start   ;;
+    'stop'    ) muc_stop    ;;
+    'restart' ) muc_restart ;;
+    'status'  ) muc_status  ;;
+    * ) echo "${0} start|stop|restart|status" 1>&2; exit 1 ;;
+esac
