@@ -1,0 +1,1 @@
+*MU-Conference* is Free software written in C language under the GPL v2 license. It is a component for a Jabber/XMPP server. It provides an implementation of Multi-User Chat (MUC, XEP-0045). So with MU-Conference, you can run your own Jabber chatrooms server.
