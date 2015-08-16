@@ -1,0 +1,252 @@
+#!/bin/bash
+
+# Slackware build script for jabberd 2.x
+
+# Copyright 2011 Mykyta Solomko
+# All rights reserved.
+#
+# Permission to use, copy, modify, and distribute this software for any purpose
+# with or without fee is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# AUTHORS AND COPYRIGHT HOLDERS AND THEIR CONTRIBUTORS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+set -e
+
+PRGNAM=jabberd2
+SRCNAM=jabberd
+VERSION=${VERSION:-2.3.3}
+ARCH=${ARCH:-x86_64}
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+NUMJOBS=${NUMJOBS:-4}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build}
+PKG=${TMP}/package-${PRGNAM}-${VERSION}
+OUTPUT=${OUTPUT:-/tmp}
+
+DEBUG=${DEBUG:-no}
+PGSQL=${PGSQL:-no}
+MYSQL=${MYSQL:-no}
+SQLITE=${SQLITE:-yes}
+BDB=${BDB:-no}
+LDAP=${LDAP:-no}
+
+JABBERDUSER=${JABBERDUSER:-jabber}
+JABBERDGROUP=${JABBERDGROUP:-jabber}
+JABBERDUID=${JABBERDUID:-275}
+JABBERDGID=${JABBERDGID:-275}
+
+# Bail out if user or group isn't valid on your system
+# For slackbuilds.org, assigned zabbix uid/gid are 228/228
+# See http://slackbuilds.org/uid_gid.txt
+if ! grep -qo ^${JABBERDGROUP}: /etc/group || ! grep -qo ^${JABBERDUSER}: /etc/passwd; then
+    echo "  You must have a \"${JABBERDUSER}\" user and \"${JABBERDGROUP}\" group to run this script."
+    echo "    # groupadd -g ${JABBERDGID} ${JABBERDGROUP}"
+    echo "    # useradd -u ${JABBERDUID} -g ${JABBERDGROUP} -d /var/lib/jabberd2 -s /bin/false ${JABBERDUSER}"
+    exit 1
+fi
+
+if [ ${ARCH} = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ ${ARCH} = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ ${ARCH} = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+EXTRAOPTS=''
+
+# Debug
+if [ "${DEBUG}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-debug --enable-nad-debug --enable-pool-debug --enable-mio-debug"
+fi
+
+# PostgreSQL support
+if [ "${PGSQL}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-pgsql"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-pgsql"
+fi
+
+# MySQL support
+if [ "${MYSQL}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-mysql"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-mysql"
+fi
+
+# SQLite support
+if [ "${SQLITE}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-sqlite"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-sqlite"
+fi
+
+# Berkley DB support
+if [ "${BDB}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-db"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-db"
+fi
+
+# LDAP support
+if [ "${LDAP}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-ldap"
+else
+    EXTRAOPTS="${EXTRAOPTS} --disable-ldap"
+fi
+
+# Filesystem storage support
+if [ "${FS}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-fs"
+fi
+
+rm -rf ${PKG}
+mkdir -p ${TMP} ${PKG} ${OUTPUT}
+cd ${TMP}
+rm -rf ${PRGNAM}-${VERSION}
+tar xvf ${CWD}/${SRCNAM}-${VERSION}.tar.?z* || exit 1
+
+cd ${SRCNAM}-${VERSION}
+chown -R root:root .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+    --prefix=/ \
+    --exec-prefix=/usr \
+    --bindir=/usr/bin \
+    --libdir=/usr/lib${LIBDIRSUFFIX} \
+    --sysconfdir=/etc/${PRGNAM} \
+    --mandir=/usr/man \
+    --docdir=/usr/doc/$PRGNAM-$VERSION \
+    --localstatedir=/var/lib \
+    --enable-ssl \
+    --enable-superseded \
+    --enable-mio=epoll \
+    --build=x86_64-slackware-linux \
+    ${EXTRAOPTS}
+
+make -j ${NUMJOBS}
+make install DESTDIR=${PKG}
+
+mkdir -p ${PKG}/etc/rc.d \
+         ${PKG}/etc/default \
+         ${PKG}/var/run \
+         ${PKG}/var/lib \
+         ${PKG}/etc/logrotate.d
+
+install -v -m 0700 \
+        -o ${JABBERDUSER} -g ${JABBERDGROUP} \
+        -d ${PKG}/var/run/${PRGNAM} \
+           ${PKG}/var/log/${PRGNAM} \
+           ${PKG}/var/lib/${PRGNAM}/{db,fs,stats}
+
+install -v -m 0644 \
+        -o root -g root \
+        ${CWD}/rc.${PRGNAM} ${PKG}/etc/rc.d/rc.${PRGNAM}.new
+
+install -v -m 0644 \
+        -o root -g root \
+        ${CWD}/${PRGNAM}.default ${PKG}/etc/default/${PRGNAM}.new
+
+install -v -m 0644 \
+        -o root -g root \
+        ${CWD}/${PRGNAM}.logrotate ${PKG}/etc/logrotate.d/${PRGNAM}.new
+
+# Rename configuration files
+find $PKG/etc/${PRGNAM} -type f \
+	\( -name '*.xml' -o -name '*.cfg' -o -name '*.conf' \) \
+	-exec mv {} {}.new \;
+
+# Remove junk
+rm -rf ${PKG}/etc/init \
+       ${PKG}/lib/systemd
+find ${PKG}/etc -name "*.dist" -type f -delete;
+
+# Compress man pages
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+
+for i in $( find $PKG/usr/man -type l ) ; do
+    ln -sf $( readlink $i ).gz $i.gz
+    rm -f $i
+done
+
+# Fix pathes in configuration files
+sed -i \
+    -e 's|var/lib/jabberd/pid/|var/run/jabberd2/|g' \
+    -e 's|var/lib/jabberd/run/pbx|var/run/jabberd2/|g' \
+    -e 's|var/lib/jabberd/log/|var/log/jabberd2/|g' \
+    -e 's|var/lib/jabberd/db|var/lib/jabberd2/db|g' \
+    -e 's|var/lib/jabberd/stats|var/lib/jabberd2/stats|g' \
+    ${PKG}/etc/jabberd2/*.xml.new
+
+# Copy docs
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+    AUTHORS COPYING ChangeLog INSTALL NEWS README README.config README.protocol \
+    README.win32 TODO \
+    $PKG/usr/doc/$PRGNAM-$VERSION
+
+# Tools
+mkdir -p ${PKG}/usr/share/jabberd2/
+cp -a \
+    tools/bdb2mysql.rb tools/bdbdump.pl tools/db-jd14-2-jd2.sql \
+    tools/db-setup.mysql tools/db-setup.oracle tools/db-setup.pgsql \
+    tools/db-setup.sqlite tools/db-update.mysql tools/db-update.pgsql \
+    tools/db-update.sqlite tools/jabberd-authpipe-pam-0.1.pl \
+    tools/jabberd2.schema tools/migrate-jd14dir-2-sqlite.pl \
+    tools/migrate.pl tools/pam_jabberd tools/pipe-auth.pl \
+   ${PKG}/usr/share/jabberd2
+
+# Installation scripts
+mkdir -p $PKG/install
+for INSTFILE in 'doinst.sh'      \
+                'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
+
+sed -i \
+    -e "s/%JABBERDGROUP%/${JABBERDGROUP}/g" \
+    -e "s/%JABBERDUSER%/${JABBERDUSER}/g" \
+    -e "s/%JABBERDGID%/${JABBERDGID}/g" \
+    -e "s/%JABBERDUID%/${JABBERDUID}/g" \
+            ${PKG}/etc/rc.d/rc.jabberd2.new \
+            ${PKG}/etc/default/jabberd2.new \
+            ${PKG}/etc/logrotate.d/jabberd2.new
+
+cd ${PKG}
+/sbin/makepkg -l y -c n ${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}
+

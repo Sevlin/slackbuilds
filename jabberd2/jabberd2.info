@@ -1,0 +1,8 @@
+PRGNAM="jabberd2"
+VERSION="2.3.3"
+HOMEPAGE="http://jabberd2.org"
+DOWNLOAD="https://github.com/jabberd2/jabberd2/releases/download/jabberd-2.3.3/jabberd-2.3.3.tar.xz"
+MD5SUM="92dd829d0b7968b170b8b13f3409b710"
+REQUIRES="udns"
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
