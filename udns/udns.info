@@ -1,0 +1,8 @@
+PRGNAM="udns"
+VERSION="0.4"
+HOMEPAGE="http://www.corpit.ru/mjt/udns.html"
+DOWNLOAD="http://www.corpit.ru/mjt/udns/udns-0.4.tar.gz"
+MD5SUM="51e141b044b078d71ebb71f823959c1b"
+REQUIRES=""
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
