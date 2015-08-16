@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+libspf2: libspf2 (Sender Policy Framework implementation)
+libspf2:
+libspf2: libspf2 implements the Sender Policy Framework, a part of the SPF/SRS
+libspf2: protocol pair. libspf2 is a library which allows email systems such
+libspf2: as Sendmail, Postfix, Exim, Zmailer and MS Exchange to check SPF
+libspf2: records and make sure that the email is authorized by the domain name
+libspf2: that it is coming from.
+libspf2:
+libspf2: http://www.libspf2.org/
+libspf2:
+libspf2:
