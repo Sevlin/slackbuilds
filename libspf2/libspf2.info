@@ -1,0 +1,8 @@
+PRGNAM="libspf2"
+VERSION="1.2.10"
+HOMEPAGE="http://www.libspf2.org"
+DOWNLOAD="http://www.libspf2.org/spf/libspf2-1.2.10.tar.gz"
+MD5SUM="7bb9937d0705649eaa8646de66dc3562"
+REQUIRES=""
+MAINTAINER="Mykyta Solomko"
+EMAIL="sev@nix.org.ua"
