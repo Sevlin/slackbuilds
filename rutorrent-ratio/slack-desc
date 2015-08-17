@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+               |-----handy-ruler------------------------------------------------------|
+rutorrent-ratio: rutorrent-ratio (set ratio limits for groups of torrents)
+rutorrent-ratio:
+rutorrent-ratio: Since version 0.8.5 rtorrent has a capability to to set ratio limits
+rutorrent-ratio: for groups of torrents. The plugin allows to manage it conveniently.
+rutorrent-ratio: When the plugin is installed a new section "Ratio groups" appears in
+rutorrent-ratio: the Settings dialog.
+rutorrent-ratio:
+rutorrent-ratio: Homepage: http://forums.rutorrent.org/
+rutorrent-ratio:
+rutorrent-ratio:
+rutorrent-ratio:

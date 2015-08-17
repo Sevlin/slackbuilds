@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+                     |-----handy-ruler------------------------------------------------------|
+rutorrent-tracklabels: rutorrent-tracklabels (adds a set of labels on the category panel)
+rutorrent-tracklabels: 
+rutorrent-tracklabels: The plugin adds a set of labels on the category panel. These labels
+rutorrent-tracklabels: are created automatically on the basis of torrents' trackers.
+rutorrent-tracklabels:
+rutorrent-tracklabels: Homepage: http://forums.rutorrent.org/
+rutorrent-tracklabels:
+rutorrent-tracklabels:
+rutorrent-tracklabels:
+rutorrent-tracklabels:
+rutorrent-tracklabels:

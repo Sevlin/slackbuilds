@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+                 |-----handy-ruler------------------------------------------------------|
+rutorrent-throttle: rutorrent-throttle (set limits of speed for groups of torrents)
+rutorrent-throttle:
+rutorrent-throttle: In rtorrent version 0.8.5 and later it is possible to set limits of 
+rutorrent-throttle: speed for groups of torrents. Tthrottle plugin gives a convenient 
+rutorrent-throttle: control over this possibility. After this plugin is installed a new 
+rutorrent-throttle: option "Channels" will appear in the Settings dialog.
+rutorrent-throttle:
+rutorrent-throttle: Homepage: http://forums.rutorrent.org/
+rutorrent-throttle:
+rutorrent-throttle:
+rutorrent-throttle:
