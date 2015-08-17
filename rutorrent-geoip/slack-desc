@@ -8,10 +8,10 @@
                |-----handy-ruler------------------------------------------------------|
 rutorrent-geoip: rutorrent-geoip (GeoIP peer information)
 rutorrent-geoip:
-rutorrent-geoip: The plugin enables to show GeoIP information about peers using
-rutorrent-geoip: MaxMind's GeoIP database.
+rutorrent-geoip: The plugin provides GeoIP information about peers using MaxMind's
+rutorrent-geoip: GeoIP database.
 rutorrent-geoip:
-rutorrent-geoip: Homepage: http://forums.rutorrent.org/
+rutorrent-geoip: Homepage: https://github.com/Novik/ruTorrent/wiki/PluginGeoIP
 rutorrent-geoip:
 rutorrent-geoip:
 rutorrent-geoip:
