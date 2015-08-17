@@ -15,6 +15,15 @@ RAILS_ENV=${RAILS_ENV:-'%RAILS_ENV%'}
 
 ME="$(whoami)"
 
+wait_pid()  
+{
+    local pid=${1}
+    while test -d "/proc/${pid}"; do
+        echo -n '.'
+        sleep 1
+    done
+}
+
 as_user()
 {
         if [ "${ME}" != "${GITLAB_USER}" ]; then
@@ -36,8 +45,10 @@ glsidekiq_stop()
 {
         echo -n "Shutting down GitLab Sidekiq..."
         if [ -r ${SIDEKIQ_PIDFILE} ]; then
-                MSG=$(kill -QUIT $(cat ${SIDEKIQ_PIDFILE}) 2>&1)
+                PID=$(cat ${SIDEKIQ_PIDFILE})
+                MSG=$(kill -QUIT ${PID} 2>&1)
                 if [ ${?} -eq 0 ]; then
+			wait_pid ${PID}
                         echo "done"
                         rm -f ${SIDEKIQ_PIDFILE} &> /dev/null
                 else
