@@ -13,7 +13,7 @@ rutorrent-loginmgr: It's designed to be used in cased where cookies fail.
 rutorrent-loginmgr:
 rutorrent-loginmgr: Attention! This plugin saves passwords in plain text.
 rutorrent-loginmgr:
-rutorrent-loginmgr: Homepage: http://forums.rutorrent.org/
+rutorrent-loginmgr: Homepage: https://github.com/Novik/ruTorrent/wiki/PluginLoginMgr
 rutorrent-loginmgr:
 rutorrent-loginmgr:
 rutorrent-loginmgr:

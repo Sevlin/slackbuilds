@@ -9,11 +9,11 @@
 rutorrent-throttle: rutorrent-throttle (set limits of speed for groups of torrents)
 rutorrent-throttle:
 rutorrent-throttle: In rtorrent version 0.8.5 and later it is possible to set limits of 
-rutorrent-throttle: speed for groups of torrents. Tthrottle plugin gives a convenient 
+rutorrent-throttle: speed for groups of torrents. Throttle plugin gives a convenient 
 rutorrent-throttle: control over this possibility. After this plugin is installed a new 
 rutorrent-throttle: option "Channels" will appear in the Settings dialog.
 rutorrent-throttle:
-rutorrent-throttle: Homepage: http://forums.rutorrent.org/
+rutorrent-throttle: Homepage: https://github.com/Novik/ruTorrent/wiki/PluginThrottle
 rutorrent-throttle:
 rutorrent-throttle:
 rutorrent-throttle:

@@ -12,7 +12,7 @@ rutorrent-seedingtime: The plugin adds the columns 'Finished' and 'Added' to the
 rutorrent-seedingtime: list. This columns contains the time when download of the torrent was
 rutorrent-seedingtime: completed and, accordingly, the time when torrent was added.
 rutorrent-seedingtime:
-rutorrent-seedingtime: Homepage: http://forums.rutorrent.org/
+rutorrent-seedingtime: Homepage: https://github.com/Novik/ruTorrent/wiki/PluginSeedingtime
 rutorrent-seedingtime:
 rutorrent-seedingtime:
 rutorrent-seedingtime:

@@ -11,7 +11,7 @@ rutorrent-tracklabels:
 rutorrent-tracklabels: The plugin adds a set of labels on the category panel. These labels
 rutorrent-tracklabels: are created automatically on the basis of torrents' trackers.
 rutorrent-tracklabels:
-rutorrent-tracklabels: Homepage: http://forums.rutorrent.org/
+rutorrent-tracklabels: Homepage: https://github.com/Novik/ruTorrent/wiki/PluginTracklabels
 rutorrent-tracklabels:
 rutorrent-tracklabels:
 rutorrent-tracklabels:
