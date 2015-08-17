@@ -2,6 +2,8 @@
 For more info, please visit Maxmind's website.  
 
 - - - -
+*Requires*: GeoIP
+- - - -
 
 To enable the GeoIP extension for php, go to **/etc/php/geoip.ini** and uncomment the line:  
 ```ini
