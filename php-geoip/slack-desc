@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+php-geoip: php-geoip (GeoIP bindings for PHP)
+php-geoip:
+php-geoip: The GeoIP extension allows you to find the location of an IP address.
+php-geoip: City, State, Country, Longitude, Latitude, and other information as
+php-geoip: all, such as ISP and connection type can be obtained with the help
+php-geoip: of GeoIP. 
+php-geoip:
+php-geoip: Homepage: http://php.net/manual/en/book.geoip.php
+php-geoip:
+php-geoip:
+php-geoip:
