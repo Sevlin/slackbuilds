@@ -25,7 +25,7 @@
 PRGNAM=gitlab
 VERSION=${VERSION:-7.13.5}
 PKGSUFFIX=${PKGSUFFIX-pgsql}
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-sev}
 SRCNAM=gitlab-ce.git
 

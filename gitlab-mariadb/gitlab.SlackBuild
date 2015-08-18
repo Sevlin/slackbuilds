@@ -24,8 +24,8 @@
 
 PRGNAM=gitlab
 VERSION=${VERSION:-7.13.5}
-PKGSUFFIX=${PKGSUFFIX-mariadb}
-BUILD=${BUILD:-1}
+PKGSUFFIX=${PKGSUFFIX:-mariadb}
+BUILD=${BUILD:-2}
 TAG=${TAG:-sev}
 SRCNAM=gitlab-ce.git
 
@@ -205,10 +205,10 @@ fi
 ( cd $PKG/$DOCROOT/$PRGNAM; \
      ln -sf ../../../usr/doc/$PRGNAM-$VERSION doc;\
      rm --preserve-root -rf tmp log; \
-     ln -sf ../../../var/log/$PRGNAM log; \
      ln -sf /tmp tmp; \
      ln -sf ../../run/$PRGNAM pids; \
      ln -sf ../../run/$PRGNAM sockets; \
+     ln -sf ../../log/$PRGNAM log; \
      ln -sf ../../lib/$PRGNAM/backups backups; \
 cd - )
 
@@ -247,6 +247,7 @@ install -m 0644 $CWD/gitlab-backup.cron \
 install -m 0644 $CWD/gitlab.logrotate \
 		$PKG/etc/logrotate.d/gitlab.new
 sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
+       -e "s|%GITLABGROUP%|${GITLABGROUP}|g" \
        -e "s|%DOCROOT%|/${DOCROOT%/}/${PRGNAM}|g" \
        -e "s|%PIDDIR%|/${PIDDIR%/}|g" \
        -e "s|%LOGDIR%|/${LOGDIR%/}|g" \
