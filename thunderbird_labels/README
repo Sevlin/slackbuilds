@@ -1,0 +1,22 @@
+* Displays the message rows using the same colors as Thunderbird does
+* Label of a message can be changed/set exactly like in Thunderbird
+* Keyboard shortcuts on keys 0-5 work like in Thunderbird
+* Integrates into contextmenu plugin when available
+* Works for skins classic and larry
+* Currently available translations:
+            English
+            French (Français)
+            German (Deutsch)
+            Polish (Polski)
+            Russian (Русский)
+            Hungarian (Magyar)
+            Czech (Česky)
+            Bulgarian (български език)
+            Catalan (català)
+            Latvian (latviešu)
+            Italian (italiano)
+            Spanish (español)
+            Ukranian (українська)
+
+You can override DOCROOT, PHPUSER, and PHPGROUP at build time.
+They default to DOCROOT=/var/www/webapps, PHPUSER=root, PHPGROUP=apache.
