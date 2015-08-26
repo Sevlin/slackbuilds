@@ -1,0 +1,1 @@
+php55|php54|php53|php>=5.3.2,postgresql93|postgresql92|postgresql>=8.3|mariadb55|mariadb54|mariadb53|mariadb52|mariadb>=5.0.2|mysql>=5.0.2|sqlite>=3.3.7|oracle>=9.0.1

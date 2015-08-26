@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+tt-rss: Tiny Tiny RSS (RSS/Atom feed reader and aggregator)
+tt-rss:
+tt-rss: Tiny Tiny RSS is an open source web-based news feed (RSS/Atom) reader
+tt-rss: and aggregator, designed to allow you to read news from any location,
+tt-rss: while feeling as close to a real desktop application as possible.
+tt-rss:
+tt-rss: Homepage: https://tt-rss.org/
+tt-rss:
+tt-rss:
+tt-rss:
+tt-rss:
