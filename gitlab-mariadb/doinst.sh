@@ -48,6 +48,6 @@ config %DOCROOT%/config/resque.yml.new
 config %DOCROOT%/config/database.yml.new
 config %DOCROOT%/config/environments/production.rb.new
 config etc/default/gitlab.new
-config etc/cron.daily/gitlab-backup.cron.new
+config etc/cron.daily/gitlab-backup.new
 preserve_perms etc/rc.d/rc.gitlab-sidekiq.new
 preserve_perms etc/rc.d/rc.gitlab-unicorn.new

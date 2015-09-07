@@ -243,7 +243,7 @@ install -m 0644 $CWD/rc.gitlab-sidekiq \
 install -m 0644 $CWD/gitlab.default \
 		$PKG/etc/default/gitlab.new
 install -m 0644 $CWD/gitlab-backup.cron \
-		$PKG/etc/cron.daily/gitlab-backup.cron.new
+		$PKG/etc/cron.daily/gitlab-backup.new
 install -m 0644 $CWD/gitlab.logrotate \
 		$PKG/etc/logrotate.d/gitlab.new
 sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
@@ -255,7 +255,7 @@ sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
 	 $PKG/etc/rc.d/rc.gitlab-unicorn.new \
 	 $PKG/etc/rc.d/rc.gitlab-sidekiq.new \
 	 $PKG/etc/default/gitlab.new \
-	 $PKG/etc/cron.daily/gitlab-backup.cron.new \
+	 $PKG/etc/cron.daily/gitlab-backup.new \
 	 $PKG/etc/logrotate.d/gitlab.new
 
 # Installation scripts

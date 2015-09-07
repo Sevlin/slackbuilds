@@ -39,7 +39,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/build}
+TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=${TMP}/package-${PRGNAM}-${VERSION}
 OUTPUT=${OUTPUT:-/tmp}
 
