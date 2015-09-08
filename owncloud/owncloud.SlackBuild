@@ -23,12 +23,9 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Based on phpMyAdmin slackware build script by Nishant Limbachia, Hoffman Estates, IL, USA
-# <nishant _AT_ mnspace _DOT_ net>
-
 PRGNAM="owncloud"
-VERSION=${VERSION:-8.0.5}
-ARCH="noarch" 	# hardcode ARCH
+VERSION=${VERSION:-8.1.1}
+ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -70,15 +67,15 @@ cp -a \
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
 
-mkdir $PKG/$DOCROOT/$PRGNAM/data
-chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data}
+mkdir $PKG/$DOCROOT/$PRGNAM/{data,assets}
+chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data,assets}
 chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
-chmod 775 $PKG/$DOCROOT/$PRGNAM/apps
+chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
 
 
 # Rename default configuration files
 mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
-    $PKG/$DOCROOT/$PRGNAM/.htaccess.new
+   $PKG/$DOCROOT/$PRGNAM/.htaccess.new
 
 mkdir -p $PKG/install
 for METAFILE in 'doinst.sh' \
