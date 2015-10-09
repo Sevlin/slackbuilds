@@ -196,8 +196,8 @@ find $PKG -perm 444 -exec chmod 0644 {} \;
 find $PKG -perm 555 -exec chmod 0755 {} \;
 
 # Make the temp path.
-mkdir -p $PKG/var/lib/$PRGNAM
-chmod 0700 $PKG/var/lib/$PRGNAM
+install -d -o $NGINXUSER -g $NGINXGROUP \
+        -m 0700	$PKG/var/lib/$PRGNAM
 
 # Move html directory
 mkdir -p $PKG/var/www
@@ -220,6 +220,12 @@ done
 if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
 	cat $MODSECNAME-$MODSECVERSION/modsecurity.conf-recommended \
 	  > $PKG/etc/$PRGNAM/modsecurity.conf.new
+fi
+
+# modsecurity's unicode mapping
+if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
+	cat $MODSECNAME-$MODSECVERSION/unicode.mapping \
+	  > $PKG/etc/$PRGNAM/unicode.mapping.new
 fi
 
 # Set the permissions for the log directory.

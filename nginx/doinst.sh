@@ -36,3 +36,6 @@ config etc/nginx/win-utf.new
 if [ -e etc/nginx/modsecurity.conf.new ]; then
 	config etc/nginx/modsecurity.conf.new
 fi
+if [ -e etc/nginx/unicode.mapping.new ]; then
+	config etc/nginx/unicode.mapping.new
+fi
