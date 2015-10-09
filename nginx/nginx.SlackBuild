@@ -30,10 +30,12 @@
 
 PRGNAM=nginx
 VERSION=${VERSION:-1.8.0}
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-sev}
 MODSECNAME=modsecurity
 MODSECVERSION=${MODSECVERSION:-2.9.0}
+HDRSMORENAME=headers-more
+HDRSMOREVERSION=${HDRSMOREVERSION:-0.261}
 
 
 if [ -z "$ARCH" ]; then
@@ -49,7 +51,11 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 NUMJOBS=${NUMJOBS:-2}
-MOD_SECURITY=${MOD_SECURITY:-"yes"}
+
+NGINX_ENABLE_GEOIP=${NGINX_ENABLE_GEOIP:-'no'}
+NGINX_ENABLE_MODSEC=${NGINX_ENABLE_MODSEC:-'no'}
+NGINX_ENABLE_HEADERSMORE=${NGINX_ENABLE_HEADERSMORE:-'no'}
+EXTRA_MODS=''
 
 if [ "$ARCH" = "i486" ]; then
    SLKCFLAGS="-O2 -march=i486 -mtune=i686"
@@ -80,10 +86,20 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
  -exec chmod 644 {} \;
 
-if [ $MOD_SECURITY = "yes" ]; then
-	pushd $(pwd)
-	tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
-	cd $PRGNAM-$VERSION
+
+# Fix the nginx.conf file for html and virtual server directory.
+sed -i \
+  -e '/root[ ]*html/s|html;|/var/www/&|' \
+  -e '$s|.*|    include /etc/nginx/conf.d/\*.conf;\n&|' conf/$PRGNAM.conf
+
+if [ "${NGINX_ENABLE_GEOIP}" == "yes" ]; then
+  EXTRA_MODS="${EXTRA_MODS} --with-http_geoip_module"
+fi
+
+# mod_security WAF
+if [ "${NGINX_ENABLE_MODSEC}" == "yes" ]; then
+	tar xvf $CWD/$MODSECNAME-$MODSECVERSION.tar.?z*
+	pushd $MODSECNAME-$MODSECVERSION
 	chown -R root:root .
 	find -L . \
 	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
@@ -91,18 +107,31 @@ if [ $MOD_SECURITY = "yes" ]; then
 	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
 	 -exec chmod 644 {} \;
 
+	CFLAGS="$SLKCFLAGS" \
+	CXXFLAGS="$SLKCFLAGS" \
+	./configure \
+	  --enable-standalone-module \
+	  --disable-mlogc
+	make -j ${NUMJOBS}
+
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${MODSECNAME}-${MODSECVERSION}/nginx/modsecurity"
 	popd
 fi
 
-# Fix the nginx.conf file for html and virtual server directory.
-sed -i \
-  -e '/root[ ]*html/s|html;|/var/www/&|' \
-  -e '$s|.*|    include /etc/nginx/conf.d/\*.conf;\n&|' conf/$PRGNAM.conf
+# headers-more
+if [ "${NGINX_ENABLE_HEADERSMORE}" == "yes" ]; then
+	tar xvf $CWD/v$HDRSMOREVERSION.tar.?z*
+	mv $HDRSMORENAME-nginx-module-$HDRSMOREVERSION $HDRSMORENAME-$HDRSMOREVERSION
+	pushd $HDRSMORENAME-$HDRSMOREVERSION
+	chown -R root:root .
+	find -L . \
+	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+	 -exec chmod 755 {} \; -o \
+	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+	 -exec chmod 644 {} \;
 
-if [ "${USE_GEOIP:-no}" == "yes" ]; then
-  GEOIP_MOD="--with-http_geoip_module"
-else
-  GEOIP_MOD=""
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${HDRSMORENAME}-${HDRSMOREVERSION}"
+	popd
 fi
 
 CFLAGS="$SLKCFLAGS" \
@@ -145,7 +174,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-mail \
   --with-mail_ssl_module \
   --with-http_spdy_module \
-  $GEOIP_MOD
+  $EXTRA_MODS
 
 make -j ${NUMJOBS}
 make install \
@@ -153,8 +182,10 @@ make install \
   INSTALLDIRS=vendor \
   INSTALLVENDORMAN3DIR=/usr/man/man3
 
+# Strip binaries
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | \
   grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
 
 mkdir -p $PKG/usr/man/man8
 install -m 0644 objs/$PRGNAM.8 $PKG/usr/man/man8
@@ -185,6 +216,12 @@ for i in $(find $PKG/etc/$PRGNAM -type f ! -name "*\.default"); do
   mv "$i" "$i".new
 done
 
+# Copy default modsecurity config
+if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
+	cat $MODSECNAME-$MODSECVERSION/modsecurity.conf-recommended \
+	  > $PKG/etc/$PRGNAM/modsecurity.conf.new
+fi
+
 # Set the permissions for the log directory.
 chown $NGINXUSER $PKG/var/log/$PRGNAM
 chmod 750 $PKG/var/log/$PRGNAM
@@ -207,6 +244,21 @@ do
     [[ -f $CWD/$INSTFILE ]] \
         && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
 done
+
+# Add GeoIP deps
+if [ "${NGINX_ENABLE_GEOIP}" == yes ]; then
+	echo -n ',' >> $PKG/install/slack-required
+	cat $CWD/slack-required-geoip >> $PKG/install/slack-required
+fi
+
+# Add GeoIP deps
+if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
+	echo -n ',' >> $PKG/install/slack-required
+	cat $CWD/slack-required-modsec >> $PKG/install/slack-required
+fi
+
+# Add \n to deps file
+echo >> $PKG/install/slack-required
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

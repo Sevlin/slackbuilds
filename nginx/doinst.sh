@@ -33,3 +33,6 @@ config etc/nginx/koi-win.new
 config etc/nginx/scgi_params.new
 config etc/nginx/uwsgi_params.new
 config etc/nginx/win-utf.new
+if [ -e etc/nginx/modsecurity.conf.new ]; then
+	config etc/nginx/modsecurity.conf.new
+fi
