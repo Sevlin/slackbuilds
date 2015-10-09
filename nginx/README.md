@@ -1,15 +1,19 @@
-nginx [engine x] is a high-performance HTTP server and reverse proxy
-as well as an IMAP/POP3 proxy server.
+*NGINX* [engine x] is a high-performance HTTP server and reverse proxy as well as an IMAP/POP3 proxy server.
 
-By default, nginx will use the "nobody" user and group accounts. You may
-specify alternate values on the command line if desired; for example:
+- - - -
+By default, nginx will use the "nobody" user and group accounts. Also there are extra third-party modules avaliable.  
+List of default overridable values:  
+* NGINXUSER=nobody
+* NGINXGROUP=nogroup
+* NGINX_ENABLE_GEOIP=no
+* NGINX_ENABLE_MODSEC=no
+* NGINX_ENABLE_HEADERSMORE=no
 
-    NGINXUSER=backup NGINXGROUP=backup ./nginx.SlackBuild
+You may specify alternate values on the command line if desired; for example:
+```bash
+NGINXUSER=backup NGINXGROUP=backup NGINX_ENABLE_GEOIP=yes NGINX_ENABLE_MODSEC=yes NGINX_ENABLE_HEADERSMORE=yes ./nginx.SlackBuild
+```
+- - - -
+Regardless of which user and group you decide to use, you will need to make sure they exist on both the build system and the target system.
 
-Regardless of which user and group you decide to use, you will need to make
-sure they exist on both the build system and the target system.
 
-Geoip support is now available as an option using the GeopIP package. If you wish
-to enable GeoIP the pass USE_GEOIP variable to the slackbuild:
-
-    USE_GEOIP=yes ./nginx.SlackBuild
