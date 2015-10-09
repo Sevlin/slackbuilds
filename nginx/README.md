@@ -16,7 +16,7 @@ NGINXUSER=backup NGINXGROUP=backup NGINX_ENABLE_GEOIP=yes NGINX_ENABLE_MODSEC=ye
 Regardless of which user and group you decide to use, you will need to make sure they exist on both the build system and the target system.
 
 - - - -
-nginx documentation: http://nginx.org/en/docs/
-modsecurity: https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual
-headers-more: https://github.com/openresty/headers-more-nginx-module
+* nginx documentation: http://nginx.org/en/docs/  
+* modsecurity: https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual  
+* headers-more: https://github.com/openresty/headers-more-nginx-module  
 
