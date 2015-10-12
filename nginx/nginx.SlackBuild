@@ -30,12 +30,15 @@
 
 PRGNAM=nginx
 VERSION=${VERSION:-1.8.0}
-BUILD=${BUILD:-2}
+BUILD=${BUILD:-3}
 TAG=${TAG:-sev}
-MODSECNAME=modsecurity
+# Third-party modules
+MODSECNAM=modsecurity
 MODSECVERSION=${MODSECVERSION:-2.9.0}
-HDRSMORENAME=headers-more
+HDRSMORENAM=headers-more
 HDRSMOREVERSION=${HDRSMOREVERSION:-0.261}
+FANCYINDEXNAM=ngx-fancyindex
+FANCYINDEXVERSION=${FANCYINDEXVERSION:-0.3.5}
 
 
 if [ -z "$ARCH" ]; then
@@ -55,6 +58,7 @@ NUMJOBS=${NUMJOBS:-2}
 NGINX_ENABLE_GEOIP=${NGINX_ENABLE_GEOIP:-'no'}
 NGINX_ENABLE_MODSEC=${NGINX_ENABLE_MODSEC:-'no'}
 NGINX_ENABLE_HEADERSMORE=${NGINX_ENABLE_HEADERSMORE:-'no'}
+NGINX_ENABLE_FANCYINDEX=${NGINX_ENABLE_FANCYINDEX:-'no'}
 EXTRA_MODS=''
 
 if [ "$ARCH" = "i486" ]; then
@@ -92,14 +96,15 @@ sed -i \
   -e '/root[ ]*html/s|html;|/var/www/&|' \
   -e '$s|.*|    include /etc/nginx/conf.d/\*.conf;\n&|' conf/$PRGNAM.conf
 
+# GeoIP module
 if [ "${NGINX_ENABLE_GEOIP}" == "yes" ]; then
   EXTRA_MODS="${EXTRA_MODS} --with-http_geoip_module"
 fi
 
 # mod_security WAF
 if [ "${NGINX_ENABLE_MODSEC}" == "yes" ]; then
-	tar xvf $CWD/$MODSECNAME-$MODSECVERSION.tar.?z*
-	pushd $MODSECNAME-$MODSECVERSION
+	tar xvf $CWD/$MODSECNAM-$MODSECVERSION.tar.?z*
+	pushd $MODSECNAM-$MODSECVERSION
 	chown -R root:root .
 	find -L . \
 	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
@@ -114,15 +119,15 @@ if [ "${NGINX_ENABLE_MODSEC}" == "yes" ]; then
 	  --disable-mlogc
 	make -j ${NUMJOBS}
 
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${MODSECNAME}-${MODSECVERSION}/nginx/modsecurity"
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${MODSECNAM}-${MODSECVERSION}/nginx/modsecurity"
 	popd
 fi
 
 # headers-more
 if [ "${NGINX_ENABLE_HEADERSMORE}" == "yes" ]; then
 	tar xvf $CWD/v$HDRSMOREVERSION.tar.?z*
-	mv $HDRSMORENAME-nginx-module-$HDRSMOREVERSION $HDRSMORENAME-$HDRSMOREVERSION
-	pushd $HDRSMORENAME-$HDRSMOREVERSION
+	mv $HDRSMORENAM-nginx-module-$HDRSMOREVERSION $HDRSMORENAM-$HDRSMOREVERSION
+	pushd $HDRSMORENAM-$HDRSMOREVERSION
 	chown -R root:root .
 	find -L . \
 	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
@@ -130,9 +135,25 @@ if [ "${NGINX_ENABLE_HEADERSMORE}" == "yes" ]; then
 	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
 	 -exec chmod 644 {} \;
 
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${HDRSMORENAME}-${HDRSMOREVERSION}"
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${HDRSMORENAM}-${HDRSMOREVERSION}"
 	popd
 fi
+
+# fancyindex
+if [ "${NGINX_ENABLE_FANCYINDEX}" == "yes" ]; then
+	tar xvf $CWD/v$FANCYINDEXVERSION.tar.?z*
+	pushd $FANCYINDEXNAM-$FANCYINDEXVERSION
+	chown -R root:root .
+	find -L . \
+	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+	 -exec chmod 755 {} \; -o \
+	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+	 -exec chmod 644 {} \;
+
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${FANCYINDEXNAM}-${FANCYINDEXVERSION}"
+	popd
+fi
+
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -196,6 +217,7 @@ find $PKG -perm 444 -exec chmod 0644 {} \;
 find $PKG -perm 555 -exec chmod 0755 {} \;
 
 # Make the temp path.
+mkdir -p $PKG/var/lib
 install -d -o $NGINXUSER -g $NGINXGROUP \
         -m 0700	$PKG/var/lib/$PRGNAM
 
@@ -218,13 +240,13 @@ done
 
 # Copy default modsecurity config
 if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
-	cat $MODSECNAME-$MODSECVERSION/modsecurity.conf-recommended \
+	cat $MODSECNAM-$MODSECVERSION/modsecurity.conf-recommended \
 	  > $PKG/etc/$PRGNAM/modsecurity.conf.new
 fi
 
 # modsecurity's unicode mapping
 if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
-	cat $MODSECNAME-$MODSECVERSION/unicode.mapping \
+	cat $MODSECNAM-$MODSECVERSION/unicode.mapping \
 	  > $PKG/etc/$PRGNAM/unicode.mapping.new
 fi
 
