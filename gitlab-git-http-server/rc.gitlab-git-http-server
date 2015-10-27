@@ -54,7 +54,7 @@ glghttp_start()
 glghttp_stop()
 {
         echo -n "Shutting down GitLab Git-HTTP server..."
-        PID=$(pgrep -U ${GITLAB_USER} gitlab-git-http-server )
+        PID=$(pgrep -U ${GITLAB_USER} gitlab-git-http)
         MSG=$(kill -QUIT ${PID} 2>&1)
        	if [ ${?} -eq 0 ]; then
         	wait_pid ${PID}
