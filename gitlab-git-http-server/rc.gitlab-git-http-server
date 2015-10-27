@@ -74,22 +74,10 @@ glghttp_restart()
 	glghttp_start
 }
 
-glghttp_reload()
-{
-	echo "Reloading GitLab Git-HTTP server..."
-	if [ -r ${HTTP_SRV_PIDFILE} ]; then
-		kill -USR2 $(cat ${HTTP_SRV_PIDFILE})
-	else
-		echo "PID file ${HTTP_SRV_PIDFILE} is missing" 1>&2
-		exit 1
-	fi
-}
-
 case "${1}" in
 	'start'   ) glghttp_start   ;;
 	'stop'    ) glghttp_stop    ;;
 	'restart' ) glghttp_restart ;;
-	'reload'  ) glghttp_reload  ;;
 	*)
 		echo "Usage: ${0} {start|stop|restart}"
 		exit 1
