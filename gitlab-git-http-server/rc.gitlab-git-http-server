@@ -9,7 +9,6 @@ if [ -r /etc/default/gitlab-git-http-server ]; then
 fi
 
 GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
-REPO_ROOT=${REPO_ROOT:-%REPOROOT%}
 LOGDIR=${LOGDIR:-%LOGDIR%}
 HTTP_SRV_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-git-http-server}
 HTTP_SRV_PIDFILE=${HTTP_SRV_PIDFILE:-%PIDDIR%/gitlab-git-http-server.pid}
@@ -45,7 +44,7 @@ glghttp_start()
 	[[ ! -z "${OPT_PPROF_LISTEN}" ]] \
 		&& pprof_listen="-pprofListenAddr='${OPT_PPROF_LISTEN}'"
 
-        CMD="${HTTP_SRV_BIN} -authBackend='${OPT_AUTH_BACKEND}' -listenAddr='${OPT_LISTEN_ADDR}' -listenNetwork='${OPT_LISTEN_NET}' -listenUmask=${OPT_LISTEN_UMASK} ${pprof_listen} ${REPO_ROOT}"
+        CMD="${HTTP_SRV_BIN} -authBackend='${OPT_AUTH_BACKEND}' -listenAddr='${OPT_LISTEN_ADDR}' -listenNetwork='${OPT_LISTEN_NET}' -listenUmask=${OPT_LISTEN_UMASK} ${pprof_listen}"
         echo "Starting GitLab Git-HTTP server: ${CMD}"
         CMD="${CMD} 1>>${LOGDIR%/}/gitlab-git-http-server.stdout.log 2>>${LOGDIR%/}/gitlab-git-http-server.stderr.log"
         as_user "${CMD}"

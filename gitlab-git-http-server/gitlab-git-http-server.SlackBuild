@@ -43,7 +43,6 @@ OUTPUT=${OUTPUT:-/tmp}
 NUMJOBS=${NUMJOBS:-2}
 
 DOCROOT=${DOCROOT:-var/www}
-PRGHOME=${PRGHOME:-var/lib/gitlab}
 PIDDIR=${PIDDIR:-var/run/gitlab}
 LOGDIR=${LOGDIR:-var/log/gitlab}
 GITLABUSER=${GITLABUSER:-git}
@@ -125,7 +124,6 @@ install -m 0644 $CWD/gitlab-git-http-server.default \
 		$PKG/etc/default/gitlab-git-http-server.new
 sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
        -e "s|%GITLABGROUP%|${GITLABGROUP}|g" \
-       -e "s|%REPOROOT%|/${PRGHOME%/}/repositories|g" \
        -e "s|%PIDDIR%|/${PIDDIR%/}|g" \
        -e "s|%LOGDIR%|/${LOGDIR%/}|g" \
 	 $PKG/etc/rc.d/rc.gitlab-git-http-server.new \
