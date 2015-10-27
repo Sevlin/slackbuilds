@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=gitlab
-VERSION=${VERSION:-7.14.3}
+VERSION=${VERSION:-8.0.4}
 PKGSUFFIX=${PKGSUFFIX-mariadb}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -202,15 +202,15 @@ elif [ "${PKGSUFFIX}" = 'mariadb' ]; then
 	  > $PKG/$DOCROOT/$PRGNAM/config/database.yml.new
 fi
 
-( cd $PKG/$DOCROOT/$PRGNAM; \
-     ln -sf ../../../usr/doc/$PRGNAM-$VERSION doc;\
-     rm --preserve-root -rf tmp log; \
-     ln -sf /tmp tmp; \
-     ln -sf ../../run/$PRGNAM pids; \
-     ln -sf ../../run/$PRGNAM sockets; \
-     ln -sf ../../log/$PRGNAM log; \
-     ln -sf ../../lib/$PRGNAM/backups backups; \
-cd - )
+pushd $PKG/$DOCROOT/$PRGNAM;
+     ln -sf ../../../usr/doc/$PRGNAM-$VERSION doc
+     rm --preserve-root -rf tmp log
+     ln -sf /tmp tmp
+     ln -sf ../../run/$PRGNAM pids
+     ln -sf ../../run/$PRGNAM sockets
+     ln -sf ../../log/$PRGNAM log
+     ln -sf ../../lib/$PRGNAM/backups backups
+popd
 
 # BASH settings
 cat > $PKG/$PRGHOME/.bashrc.new << EOF

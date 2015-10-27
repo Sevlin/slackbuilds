@@ -8,6 +8,7 @@ GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
 BUNDLE_BIN=${BUNDLE_BIN:-/usr/bin/bundle}
 DOCROOT=${DOCROOT:-%DOCROOT%}
 RAILS_ENV=${RAILS_ENV:-production}
+BCKUP_DAYS=${BCKUP_DAYS:=7}
 
 ME="$(whoami)"
 
@@ -20,6 +21,14 @@ as_user()
 	fi
 }
 
+cleanup()
+{
+        find ${DOCROOT}/backups/ \
+               -type f -name '*_gitlab_backup.tar' \
+               -mtime +${BCKUP_DAYS} -delete
+}
+
+cleanup
 as_user "cd ${DOCROOT} && ${BUNDLE_BIN} exec rake gitlab:backup:create"
 
 exit ${?}

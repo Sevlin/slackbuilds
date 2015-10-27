@@ -1,0 +1,88 @@
+#!/bin/bash
+
+if [ -r /etc/default/gitlab ]; then
+	source /etc/default/gitlab
+fi
+
+if [ -r /etc/default/gitlab-git-http-server ]; then
+	source /etc/default/gitlab-git-http-server
+fi
+
+GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
+REPO_ROOT=${REPO_ROOT:-%REPOROOT%}
+LOGDIR=${LOGDIR:-%LOGDIR%}
+HTTP_SRV_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-git-http-server}
+HTTP_SRV_PIDFILE=${HTTP_SRV_PIDFILE:-%PIDDIR%/gitlab-git-http-server.pid}
+OPT_AUTH_BACKEND=${OPT_AUTH_BACKEND:-http://localhost:8080}
+OPT_LISTEN_ADDR=${OPT_LISTEN_ADDR:-%PIDDIR%/git-http.socket}
+OPT_LISTEN_NET=${OPT_LISTEN_NET:-unix}
+OPT_LISTEN_UMASK=${OPT_LISTEN_UMASK:-022}
+
+
+ME="$(whoami)"
+
+wait_pid()  
+{
+    local pid=${1}
+    while test -d "/proc/${pid}"; do
+        echo -n '.'
+        sleep 1
+    done
+}
+
+as_user()
+{
+        if [ "${ME}" != "${GITLAB_USER}" ]; then
+                exec su -l ${GITLAB_USER} -c "${@}" &
+        else
+                exec bash -i -c "${@}" &
+        fi
+}
+
+glghttp_start()
+{
+	local pprof_listen=''
+	[[ ! -z "${OPT_PPROF_LISTEN}" ]] \
+		&& pprof_listen="-pprofListenAddr='${OPT_PPROF_LISTEN}'"
+
+        CMD="${HTTP_SRV_BIN} -authBackend='${OPT_AUTH_BACKEND}' -listenAddr='${OPT_LISTEN_ADDR}' -listenNetwork='${OPT_LISTEN_NET}' -listenUmask=${OPT_LISTEN_UMASK} ${pprof_listen} ${REPO_ROOT}"
+        echo "Starting GitLab Git-HTTP server: ${CMD}"
+        CMD="${CMD} 1>>${LOGDIR%/}/gitlab-git-http-server.stdout.log 2>>${LOGDIR%/}/gitlab-git-http-server.stderr.log"
+        as_user "${CMD}"
+}
+
+glghttp_stop()
+{
+        echo -n "Shutting down GitLab Git-HTTP server..."
+        PID=$(pgrep -U ${GITLAB_USER} gitlab-git-http)
+        MSG=$(kill -QUIT ${PID} 2>&1)
+       	if [ ${?} -eq 0 ]; then
+        	wait_pid ${PID}
+                echo "done"
+                rm -f ${HTTP_SRV_PIDFILE} &> /dev/null
+        else
+                echo "failed"
+                echo "=== Error message ===" 1>&2
+                echo "${MSG}" 1>&2
+                rm -f ${HTTP_SRV_PIDFILE} &> /dev/null
+        fi
+}
+
+glghttp_restart()
+{
+	glghttp_stop
+	glghttp_start
+}
+
+case "${1}" in
+	'start'   ) glghttp_start   ;;
+	'stop'    ) glghttp_stop    ;;
+	'restart' ) glghttp_restart ;;
+	*)
+		echo "Usage: ${0} {start|stop|restart}"
+		exit 1
+	;;
+esac
+
+exit 0
+

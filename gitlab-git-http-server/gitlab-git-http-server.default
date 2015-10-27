@@ -1,0 +1,5 @@
+#REPO_ROOT='/var/lib/gitlab/repositories'
+#OPT_AUTH_BACKEND='http://localhost:8080'
+#OPT_LISTEN_ADDR='/var/run/gitlab/git-http.socket'
+#OPT_LISTEN_NET='unix'
+#OPT_LISTEN_UMASK=022
