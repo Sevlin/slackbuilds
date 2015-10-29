@@ -141,7 +141,9 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 # Prepare directories.
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/public/uploads
+install -d -m 0775 \
+	-o $GITLABUSER -g $GITLABGROUP \
+	$PKG/$DOCROOT/$PRGNAM/public/uploads
 mkdir -p $PKG/var/{lib,log,run}
 install -d -m 0750 \
 	-o $GITLABUSER -g $GITLABGROUP \
