@@ -1,0 +1,77 @@
+#!/bin/bash
+
+if [ -r /etc/default/gitlab ]; then
+	source /etc/default/gitlab
+fi
+
+RUNNER_USER=${RUNNER_USER:-%RUNNERUSER%}
+RUNNER_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-runner}
+RUNNER_HOME=${RUNNER_HOME:-%RUNNERHOME%}
+
+ME="$(whoami)"
+
+wait_pid()  
+{
+    local pid=${1}
+    while test -d "/proc/${pid}"; do
+        echo -n '.'
+        sleep 1
+    done
+}
+
+as_user()
+{
+        if [ "${ME}" != "${RUNNER_USER}" ]; then
+                exec su -l ${RUNNER_USER} -c "${@}" &
+        else
+                exec bash -i -c "${@}" &
+        fi
+}
+
+glrunner_start()
+{
+        CMD="${RUNNER_BIN} start"
+        echo "Starting GitLab CI runner: ${CMD}"
+        as_user "${CMD}"
+}
+
+glrunner_stop()
+{
+        echo -n "Shutting down GitLab CI runner..."
+        CMD="${RUNNER_BIN} stop"
+	MSG=$(as_user "${CMD}" 2>&1)
+        if [ ${?} -eq 0 ]; then
+		echo "done"
+	else
+		echo "failed"
+		echo "=== Error message ===" 1>&2
+		echo "${MSG}" 1>&2
+		rm -f ${UNICORN_PIDFILE} &> /dev/null
+	fi
+}
+
+glrunner_restart()
+{
+	glrunner_stop
+	glrunner_start
+}
+
+glrunner_install()
+{
+	CMD="${RUNNER_BIN} --user=${RUNNER_USER} ----working-directory=${RUNNER_HOME}"
+	echo "Installinging GitLab CI runner: ${CMD}"
+}
+
+case "${1}" in
+	'start'   ) glrunner_start   ;;
+	'stop'    ) glrunner_stop    ;;
+	'restart' ) glrunner_restart ;;
+	'reload'  ) glrunner_install  ;;
+	*)
+		echo "Usage: ${0} {start|stop|restart}"
+		exit 1
+	;;
+esac
+
+exit 0
+
