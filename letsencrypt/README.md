@@ -1,4 +1,5 @@
-This is a **PREVIEW RELEASE** of a client application for the Let's Encrypt certificate authority and other services using the ACME protocol. The Let's Encrypt certificate authority is **NOT YET ISSUING CERTIFICATES TO THE PUBLIC**.
+This is a **PREVIEW RELEASE** of a client application for the Let's Encrypt certificate authority and other services using the ACME protocol.  
+The Let's Encrypt certificate authority is **NOT YET ISSUING CERTIFICATES TO THE PUBLIC**.
 
 - - -
 
