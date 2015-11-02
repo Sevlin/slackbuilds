@@ -50,6 +50,7 @@ JABBERD2_SQLITE=${JABBERD2_SQLITE:-yes}
 JABBERD2_BDB=${JABBERD2_BDB:-no}
 JABBERD2_LDAP=${JABBERD2_LDAP:-no}
 JABBERD2_FS=${JABBERD2_FS:-no}
+JABBERD2_WEBSOCK=${JABBERD2_WEBSOCK:-no}
 
 JABBERDUSER=${JABBERDUSER:-jabber}
 JABBERDGROUP=${JABBERDGROUP:-jabber}
@@ -122,6 +123,11 @@ fi
 # Filesystem storage support
 if [ "${JABBERD2_FS}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-fs"
+fi
+
+# Websocket support
+if [ "${JABBERD2_WEBSOCK}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-websocket"
 fi
 
 rm -rf ${PKG}
