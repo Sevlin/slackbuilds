@@ -43,20 +43,20 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=${TMP}/package-${PRGNAM}-${VERSION}
 OUTPUT=${OUTPUT:-/tmp}
 
-JABBERD2_DEBUG=${JABBERD2_DEBUG:-no}
+JABBERD2_ENABLE_DEBUG=${JABBERD2_ENABLE_DEBUG:-no}
 # Auth/reg
-JABBERD2_ANON=${JABBERD2_ANON:-no}
-JABBERD2_PIPE=${JABBERD2_PIPE:-no}
+JABBERD2_ENABLE_ANON=${JABBERD2_ENABLE_ANON:-no}
+JABBERD2_ENABLE_PIPE=${JABBERD2_ENABLE_PIPE:-no}
 # Auth/reg/storage
-JABBERD2_PGSQL=${JABBERD2_PGSQL:-no}
-JABBERD2_MYSQL=${JABBERD2_MYSQL:-no}
-JABBERD2_SQLITE=${JABBERD2_SQLITE:-yes}
-JABBERD2_BDB=${JABBERD2_BDB:-no}
-JABBERD2_LDAP=${JABBERD2_LDAP:-no}
-JABBERD2_FS=${JABBERD2_FS:-no}
-JABBERD2_ORACLE=${JABBERD2_ORACLE:-no}
+JABBERD2_ENABLE_PGSQL=${JABBERD2_ENABLE_PGSQL:-no}
+JABBERD2_ENABLE_MYSQL=${JABBERD2_ENABLE_MYSQL:-no}
+JABBERD2_ENABLE_SQLITE=${JABBERD2_ENABLE_SQLITE:-yes}
+JABBERD2_ENABLE_BDB=${JABBERD2_ENABLE_BDB:-no}
+JABBERD2_ENABLE_LDAP=${JABBERD2_ENABLE_LDAP:-no}
+JABBERD2_ENABLE_FS=${JABBERD2_ENABLE_FS:-no}
+JABBERD2_ENABLE_ORACLE=${JABBERD2_ENABLE_ORACLE:-no}
 # Misc
-JABBERD2_WEBSOCK=${JABBERD2_WEBSOCK:-no}
+JABBERD2_ENABLE_WEBSOCK=${JABBERD2_ENABLE_WEBSOCK:-no}
 
 JABBERDUSER=${JABBERDUSER:-jabber}
 JABBERDGROUP=${JABBERDGROUP:-jabber}
@@ -87,67 +87,67 @@ fi
 EXTRAOPTS=''
 
 # Debug
-if [ "${JABBERD2_DEBUG}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_DEBUG}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-debug --enable-nad-debug --enable-pool-debug --enable-mio-debug"
 fi
 
 # Anon auth/reg
-if [ "${JABBERD2_ANON}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_ANON}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-anon"
 fi
 
 # Pipe auth/reg
-if [ "${JABBERD2_PIPE}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_PIPE}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-pipe"
 fi
 
 # PostgreSQL support
-if [ "${JABBERD2_PGSQL}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_PGSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-pgsql"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-pgsql"
 fi
 
 # MySQL support
-if [ "${JABBERD2_MYSQL}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_MYSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-mysql"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-mysql"
 fi
 
 # SQLite support
-if [ "${JABBERD2_SQLITE}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_SQLITE}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-sqlite"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-sqlite"
 fi
 
 # Berkley DB support
-if [ "${JABBERD2_BDB}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_BDB}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-db"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-db"
 fi
 
-# JABBERD2_LDAP support
-if [ "${JABBERD2_LDAP}" = 'yes' ]; then
+# JABBERD2_ENABLE_LDAP support
+if [ "${JABBERD2_ENABLE_LDAP}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-ldap"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-ldap"
 fi
 
 # Filesystem storage support
-if [ "${JABBERD2_FS}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_FS}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-fs"
 fi
 
 # OracleDB support
-if [ "${JABBERD2_ORACLE}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_ORACLE}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-oracle"
 fi
 
 # Websocket support
-if [ "${JABBERD2_WEBSOCK}" = 'yes' ]; then
+if [ "${JABBERD2_ENABLE_WEBSOCK}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-websocket"
 fi
 
