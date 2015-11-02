@@ -44,12 +44,18 @@ PKG=${TMP}/package-${PRGNAM}-${VERSION}
 OUTPUT=${OUTPUT:-/tmp}
 
 JABBERD2_DEBUG=${JABBERD2_DEBUG:-no}
+# Auth/reg
+JABBERD2_ANON=${JABBERD2_ANON:-no}
+JABBERD2_PIPE=${JABBERD2_PIPE:-no}
+# Auth/reg/storage
 JABBERD2_PGSQL=${JABBERD2_PGSQL:-no}
 JABBERD2_MYSQL=${JABBERD2_MYSQL:-no}
 JABBERD2_SQLITE=${JABBERD2_SQLITE:-yes}
 JABBERD2_BDB=${JABBERD2_BDB:-no}
 JABBERD2_LDAP=${JABBERD2_LDAP:-no}
 JABBERD2_FS=${JABBERD2_FS:-no}
+JABBERD2_ORACLE=${JABBERD2_ORACLE:-no}
+# Misc
 JABBERD2_WEBSOCK=${JABBERD2_WEBSOCK:-no}
 
 JABBERDUSER=${JABBERDUSER:-jabber}
@@ -83,6 +89,16 @@ EXTRAOPTS=''
 # Debug
 if [ "${JABBERD2_DEBUG}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-debug --enable-nad-debug --enable-pool-debug --enable-mio-debug"
+fi
+
+# Anon auth/reg
+if [ "${JABBERD2_ANON}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-anon"
+fi
+
+# Pipe auth/reg
+if [ "${JABBERD2_PIPE}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-pipe"
 fi
 
 # PostgreSQL support
@@ -123,6 +139,11 @@ fi
 # Filesystem storage support
 if [ "${JABBERD2_FS}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-fs"
+fi
+
+# OracleDB support
+if [ "${JABBERD2_ORACLE}" = 'yes' ]; then
+    EXTRAOPTS="${EXTRAOPTS} --enable-oracle"
 fi
 
 # Websocket support
