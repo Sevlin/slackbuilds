@@ -43,12 +43,12 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=${TMP}/package-${PRGNAM}-${VERSION}
 OUTPUT=${OUTPUT:-/tmp}
 
-DEBUG=${DEBUG:-no}
-PGSQL=${PGSQL:-no}
-MYSQL=${MYSQL:-no}
-SQLITE=${SQLITE:-yes}
-BDB=${BDB:-no}
-LDAP=${LDAP:-no}
+JABBERD2_DEBUG=${JABBERD2_DEBUG:-no}
+JABBERD2_PGSQL=${JABBERD2_PGSQL:-no}
+JABBERD2_MYSQL=${JABBERD2_MYSQL:-no}
+JABBERD2_SQLITE=${JABBERD2_SQLITE:-yes}
+JABBERD2_BDB=${JABBERD2_BDB:-no}
+JABBERD2_LDAP=${JABBERD2_LDAP:-no}
 
 JABBERDUSER=${JABBERDUSER:-jabber}
 JABBERDGROUP=${JABBERDGROUP:-jabber}
@@ -79,40 +79,40 @@ fi
 EXTRAOPTS=''
 
 # Debug
-if [ "${DEBUG}" = 'yes' ]; then
+if [ "${JABBERD2_DEBUG}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-debug --enable-nad-debug --enable-pool-debug --enable-mio-debug"
 fi
 
 # PostgreSQL support
-if [ "${PGSQL}" = 'yes' ]; then
+if [ "${JABBERD2_PGSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-pgsql"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-pgsql"
 fi
 
 # MySQL support
-if [ "${MYSQL}" = 'yes' ]; then
+if [ "${JABBERD2_MYSQL}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-mysql"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-mysql"
 fi
 
 # SQLite support
-if [ "${SQLITE}" = 'yes' ]; then
+if [ "${JABBERD2_SQLITE}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-sqlite"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-sqlite"
 fi
 
 # Berkley DB support
-if [ "${BDB}" = 'yes' ]; then
+if [ "${JABBERD2_BDB}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-db"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-db"
 fi
 
-# LDAP support
-if [ "${LDAP}" = 'yes' ]; then
+# JABBERD2_LDAP support
+if [ "${JABBERD2_LDAP}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-ldap"
 else
     EXTRAOPTS="${EXTRAOPTS} --disable-ldap"
