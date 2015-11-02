@@ -49,6 +49,7 @@ JABBERD2_MYSQL=${JABBERD2_MYSQL:-no}
 JABBERD2_SQLITE=${JABBERD2_SQLITE:-yes}
 JABBERD2_BDB=${JABBERD2_BDB:-no}
 JABBERD2_LDAP=${JABBERD2_LDAP:-no}
+JABBERD2_FS=${JABBERD2_FS:-no}
 
 JABBERDUSER=${JABBERDUSER:-jabber}
 JABBERDGROUP=${JABBERDGROUP:-jabber}
@@ -119,7 +120,7 @@ else
 fi
 
 # Filesystem storage support
-if [ "${FS}" = 'yes' ]; then
+if [ "${JABBERD2_FS}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-fs"
 fi
 
