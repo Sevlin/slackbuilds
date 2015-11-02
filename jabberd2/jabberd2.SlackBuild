@@ -129,7 +129,7 @@ else
     EXTRAOPTS="${EXTRAOPTS} --disable-db"
 fi
 
-# JABBERD2_ENABLE_LDAP support
+# LDAP support
 if [ "${JABBERD2_ENABLE_LDAP}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-ldap"
 else
@@ -265,6 +265,45 @@ do
     [[ -f $CWD/$INSTFILE ]] \
         && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
 done
+
+# Add PostgreSQL deps
+if [ "${JABBERD2_ENABLE_PGSQL}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-pgsql)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add MariaDB/MySQL deps
+if [ "${JABBERD2_ENABLE_MYSQL}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-mysql)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add SQLite deps
+if [ "${JABBERD2_ENABLE_SQLITE}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-sqlite)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add Berkley DB deps
+if [ "${JABBERD2_ENABLE_BDB}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-berkleydb)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add Berkley DB deps
+if [ "${JABBERD2_ENABLE_LDAP}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-ldap)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add Websocket deps
+if [ "${JABBERD2_ENABLE_WEBSOCK}" = 'yes' ]; then
+	echo -n ",$(cat ${CWD}/slack-required-websock)" \
+		>> $PKG/install/slack-required
+fi
+
+# Add \n to deps file
+echo >> $PKG/install/slack-required
 
 sed -i \
     -e "s/%JABBERDGROUP%/${JABBERDGROUP}/g" \
