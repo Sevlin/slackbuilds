@@ -2,7 +2,7 @@
 
 # Slackware build script for jabberd 2.x
 
-# Copyright 2011 Mykyta Solomko
+# Copyright 2011-2015, Mykyta Solomko <sev@nix.org.ua>, Ukraine, Kyiv
 # All rights reserved.
 #
 # Permission to use, copy, modify, and distribute this software for any purpose
@@ -25,10 +25,8 @@ set -e
 PRGNAM=jabberd2
 SRCNAM=jabberd
 VERSION=${VERSION:-2.3.4}
-ARCH=${ARCH:-x86_64}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
-NUMJOBS=${NUMJOBS:-4}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -40,8 +38,9 @@ fi
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
-PKG=${TMP}/package-${PRGNAM}-${VERSION}
+PKG=${TMP}/package-${PRGNAM}
 OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-4}
 
 JABBERD2_ENABLE_DEBUG=${JABBERD2_ENABLE_DEBUG:-no}
 # Auth/reg
