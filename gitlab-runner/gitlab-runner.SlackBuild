@@ -41,6 +41,12 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
+GITLABRUNNERUSER=${GITLABRUNNERUSER:-gitlab-runner}
+GITLABRUNNERGROUP=${GITLABRUNNERGROUP:-gitlab-runner}
+GITLABRUNNERUID=${GITLABRUNNERUID:-512}
+GITLABRUNNERGID=${GITLABRUNNERGID:-512}
+GITLABRUNNERHOME=${GITLABRUNNERHOME:-"var/lib/gitlab-runner"}
+
 set -e # Exit on most errors
 
 rm -rf $PKG
@@ -48,14 +54,27 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 
 case "${ARCH}" in
-	i486)   BINARCH='386'   ;;
-	x86_64) BINARCH='amd64' ;;
-	arm)    BINARCH='arm'   ;;
-	*)
-		echo "Unsupported CPU architecture!" 1>&2
-		exit 1
-	;;
+  i486)   BINARCH='i386'  ;;
+  x86_64) BINARCH='amd64' ;;
+  arm)    BINARCH='arm'   ;;
+    *)
+          echo "Unsupported CPU architecture!" 1>&2
+	  exit 1
+    ;;
 esac
+
+# Check if the gitlab user and group exist. If not, then bail.
+if ! grep -q "^${GITLABRUNNERGROUP}:" /etc/group ; then
+    echo "  You must have a \"${GITLABRUNNERGROUP}\" group to run this script."
+    echo "    # groupadd -g ${GITLABRUNNERGID} ${GITLABRUNNERGROUP}"
+    exit 1
+fi
+
+if ! grep -q "^${GITLABRUNNERUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${GITLABRUNNERUSER}\" user to run this script."
+    echo "    # useradd -u ${GITLABRUNNERUID} -g ${GITLABRUNNERGROUP} -d /${GITLABRUNNERHOME%/} -s /bin/bash -c \"User for GitLab CI runner\" ${GITLABRUNNERUSER}"
+    exit 1
+fi
 
 mkdir -p ${PKG}/usr/sbin
 wget -c https://gitlab-ci-multi-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-ci-multi-runner-linux-${BINARCH} \
@@ -70,6 +89,10 @@ strip --strip-unneeded ${PKG}/usr/sbin/${PRGNAM} 2> /dev/null
 mkdir -p $PKG/{etc,var/lib}/gitlab-runner \
 	 $PKG/etc/{rc.d,default}
 
+# Copy start-up script
+cat ${CWD}/rc.gitlab-runner \
+  > ${PKG}/etc/rc.d/rc.gitlab-runner.new
+
 # Copy sample config from upstream
 mkdir -p $PKG/usr/share/$PRGNAM
 wget -c https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/raw/master/config.toml.example \
@@ -80,12 +103,25 @@ cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-cat $CWD/doinst.sh > $PKG/install/doinst.sh
+for INSTFILE in 'doinst.sh'      \
+		'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
 
-# Make the package; be sure to leave it in $OUTPUT
-# If package symlinks need to be created during install *before*
-# your custom contents of doinst.sh runs, then add the -p switch to
-# the makepkg command below -- see makepkg(8) for details
+sed -i -e "s|%GITLABRUNNERUSER%|${GITLABRUNNERUSER}|g"   \
+       -e "s|%GITLABRUNNERUID%|${GITLABRUNNERUID}|g"   \
+       -e "s|%GITLABRUNNERGROUP%|${GITLABRUNNERGROUP}|g" \
+       -e "s|%GITLABRUNNERGID%|${GITLABRUNNERGID}|g" \
+       -e "s|%GITLABRUNNERHOME%|${GITLABRUNNERHOME}|g"   \
+	  $PKG/install/doinst.sh \
+	  $PKG/etc/rc.d/rc.gitlab-runner.new
+
+# Make the package
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+

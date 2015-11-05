@@ -4,9 +4,9 @@ if [ -r /etc/default/gitlab ]; then
 	source /etc/default/gitlab
 fi
 
-RUNNER_USER=${RUNNER_USER:-%RUNNERUSER%}
-RUNNER_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-runner}
-RUNNER_HOME=${RUNNER_HOME:-%RUNNERHOME%}
+RUNNER_USER=${RUNNER_USER:-'%GITLABRUNNERUSER%'}
+RUNNER_BIN=${RUNNER_BIN:-/usr/sbin/gitlab-runner}
+RUNNER_HOME=${RUNNER_HOME:-'%GITLABRUNNERHOME%'}
 
 ME="$(whoami)"
 
