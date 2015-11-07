@@ -23,18 +23,20 @@ preserve_perms() {
 }
 
 add_user_group() {
-  GITLABGROUP='%GITLABGROUP%'
-  GITLABGID=%GITLABGID%
-  GITLABUSER='%GITLABUSER%'
-  GITLABUID=%GITLABUID%
-  GITLABHOME=%GITLABHOME%
-  # Add group if missing
-  if ! grep -q "^${GITLABGROUP}:" /etc/group ; then
-    groupadd -g ${GITLABGID} ${GITLABGROUP}
-  fi
-  # Add user if missing
-  if ! grep -q "^${GITLABUSER}:" /etc/passwd ; then
-    useradd -u ${GITLABUID} -g ${GITLABGROUP} -d /${GITLABHOME} -s /bin/bash -c "User for GitLab" ${GITLABUSER}
+  if [ "${PKG_ADD_USER}" = 'yes' ]; then
+    GITLABGROUP='%GITLABGROUP%'
+    GITLABGID=%GITLABGID%
+    GITLABUSER='%GITLABUSER%'
+    GITLABUID=%GITLABUID%
+    GITLABHOME=%GITLABHOME%
+    # Add group if missing
+    if ! grep -q "^${GITLABGROUP}:" /etc/group ; then
+      groupadd -g ${GITLABGID} ${GITLABGROUP}
+    fi
+    # Add user if missing
+    if ! grep -q "^${GITLABUSER}:" /etc/passwd ; then
+      useradd -u ${GITLABUID} -g ${GITLABGROUP} -d /${GITLABHOME} -s /bin/bash -c "User for GitLab" ${GITLABUSER}
+    fi
   fi
 }
 

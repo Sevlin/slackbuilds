@@ -16,8 +16,8 @@ They default to:
 
 - - - -
 :warning: **WARNING** :warning:  
-During package installation **[doinst.sh](gitlab-pgsql/doinst.sh)** will attempt to create GitLab's user if missing.
-To disable this feature comment out or delete `add_user_group()` function and/or it's call.
+If you wish to create GitLab's user if missing please add export environment variable `PKG_ADD_USER='yes'`
+To disable this feature `unset` this variable.
 
 - - - -
 For configuration help, you can visit:  
