@@ -10,5 +10,17 @@ config() {
   # Otherwise, we leave the .new copy for the admin to consider...
 }
 
-config var/www//owncloud/.htaccess.new
+preserve_perms() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  if [ -e $OLD ]; then
+    cp -a $OLD ${NEW}.incoming
+    cat $NEW > ${NEW}.incoming
+    mv ${NEW}.incoming $NEW
+  fi
+  config $NEW
+}
+
+config %DOCROOT%/owncloud/.htaccess.new
+preserve_perms etc/cron.d/owncloud.new
 

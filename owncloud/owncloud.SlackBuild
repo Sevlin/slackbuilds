@@ -77,6 +77,10 @@ chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
 mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
    $PKG/$DOCROOT/$PRGNAM/.htaccess.new
 
+# Cron job
+mkdir -p ${PKG}/etc/cron.d
+install -m 0644	${CWD}/owncloud.cron ${PKG}/etc/cron.d/owncloud.new
+
 mkdir -p $PKG/install
 for METAFILE in 'doinst.sh' \
                 'slack-conflicts' \
@@ -87,6 +91,11 @@ do
     [[ -f $CWD/$METAFILE ]] \
         && cat $CWD/$METAFILE > $PKG/install/$METAFILE
 done
+
+sed -i \
+    -e "s|%DOCROOT%|${DOCROOT#/}|g" \
+       ${PKG}/etc/cron.d/owncloud.new \
+       ${PKG}/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
