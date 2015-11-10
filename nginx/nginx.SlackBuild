@@ -30,7 +30,7 @@
 
 PRGNAM=nginx
 VERSION=${VERSION:-1.8.0}
-BUILD=${BUILD:-5}
+BUILD=${BUILD:-6}
 TAG=${TAG:-sev}
 # Third-party modules
 MODSECNAM=modsecurity
@@ -39,6 +39,8 @@ HDRSMORENAM=headers-more
 HDRSMOREVERSION=${HDRSMOREVERSION:-0.28}
 FANCYINDEXNAM=ngx-fancyindex
 FANCYINDEXVERSION=${FANCYINDEXVERSION:-0.3.5}
+PAGESPEEDNAM=ngx_pagespeed
+PAGESPEEDVERSION=${PAGESPEEDVERSION:-1.9.32.10}
 
 
 if [ -z "$ARCH" ]; then
@@ -59,6 +61,7 @@ NGINX_ENABLE_GEOIP=${NGINX_ENABLE_GEOIP:-'no'}
 NGINX_ENABLE_MODSEC=${NGINX_ENABLE_MODSEC:-'no'}
 NGINX_ENABLE_HEADERSMORE=${NGINX_ENABLE_HEADERSMORE:-'no'}
 NGINX_ENABLE_FANCYINDEX=${NGINX_ENABLE_FANCYINDEX:-'no'}
+NGINX_ENABLE_PAGESPEED=${NGINX_ENABLE_PAGESPEED:-'no'}
 EXTRA_MODS=''
 
 if [ "$ARCH" = "i486" ]; then
@@ -151,6 +154,22 @@ if [ "${NGINX_ENABLE_FANCYINDEX}" == "yes" ]; then
 	 -exec chmod 644 {} \;
 
 	EXTRA_MODS="${EXTRA_MODS} --add-module=./${FANCYINDEXNAM}-${FANCYINDEXVERSION}"
+	popd
+fi
+
+# pagespeed
+if [ "${NGINX_ENABLE_PAGESPEED}" == "yes" ]; then
+	tar xvf $CWD/v$PAGESPEEDVERSION-*.tar.?z*
+	pushd $PAGESPEEDNAM-$PAGESPEEDVERSION-beta
+	tar xvf $CWD/$PAGESPEEDVERSION.tar.?z*
+	chown -R root:root .
+	find -L . \
+	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+	 -exec chmod 755 {} \; -o \
+	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+	 -exec chmod 644 {} \;
+
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${PAGESPEEDNAM}-${PAGESPEEDVERSION}"
 	popd
 fi
 
