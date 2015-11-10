@@ -46,6 +46,7 @@ GITLABRUNNERGROUP=${GITLABRUNNERGROUP:-gitlab-runner}
 GITLABRUNNERUID=${GITLABRUNNERUID:-512}
 GITLABRUNNERGID=${GITLABRUNNERGID:-512}
 GITLABRUNNERHOME=${GITLABRUNNERHOME:-"var/lib/gitlab-runner"}
+PIDDIR=${PIDDIR:-"/var/run/gitlab"}
 
 set -e # Exit on most errors
 
@@ -54,7 +55,7 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 
 case "${ARCH}" in
-  i486)   BINARCH='i386'  ;;
+  i486)   BINARCH='386'  ;;
   x86_64) BINARCH='amd64' ;;
   arm)    BINARCH='arm'   ;;
     *)
@@ -87,11 +88,16 @@ VERSION=$(${PKG}/usr/sbin/${PRGNAM} --version | grep -oP '\d+(\.\d+)+')
 strip --strip-unneeded ${PKG}/usr/sbin/${PRGNAM} 2> /dev/null
 
 mkdir -p $PKG/{etc,var/lib}/gitlab-runner \
-	 $PKG/etc/{rc.d,default}
+	 $PKG/etc/{rc.d,default} \
+	 $PKG/etc/gitlab-runner/
 
 # Copy start-up script
 cat ${CWD}/rc.gitlab-runner \
   > ${PKG}/etc/rc.d/rc.gitlab-runner.new
+
+# Default config
+cat ${CWD}/config.toml \
+  > ${PKG}/etc/gitlab-runner/config.toml.new
 
 # Copy sample config from upstream
 mkdir -p $PKG/usr/share/$PRGNAM
@@ -118,6 +124,7 @@ sed -i -e "s|%GITLABRUNNERUSER%|${GITLABRUNNERUSER}|g"   \
        -e "s|%GITLABRUNNERGROUP%|${GITLABRUNNERGROUP}|g" \
        -e "s|%GITLABRUNNERGID%|${GITLABRUNNERGID}|g" \
        -e "s|%GITLABRUNNERHOME%|${GITLABRUNNERHOME}|g"   \
+       -e "s|%PIDDIR%|${PIDDIR}|g" \
 	  $PKG/install/doinst.sh \
 	  $PKG/etc/rc.d/rc.gitlab-runner.new
 

@@ -43,3 +43,4 @@ add_user_group() {
 
 add_user_group
 preserve_perms etc/rc.d/rc.gitlab-runner.new
+config etc/gitlab-runner/config.toml.new

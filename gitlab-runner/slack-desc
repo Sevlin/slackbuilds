@@ -8,10 +8,10 @@
              |-----handy-ruler------------------------------------------------------|
 gitlab-runner: gitlab-runner (tasks runner for GitLab CI)
 gitlab-runner:
-gitlab-runner: 
+gitlab-runner: GitLab CI runner written in Go. It runs tests and sends the results
+gitlab-runner: to GitLab.
 gitlab-runner:
-gitlab-runner:
-gitlab-runner:
+gitlab-runner: homepage: https://gitlab.com
 gitlab-runner:
 gitlab-runner:
 gitlab-runner:
