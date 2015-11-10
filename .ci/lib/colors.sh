@@ -1,0 +1,5 @@
+readonly COLNON='\e[0m'
+readonly COLRED='\e[1;31m'
+readonly COLGRN='\e[1;32m'
+readonly COLYLW='\e[1;33m'
+readonly COLBLU='\e[1;34m'
