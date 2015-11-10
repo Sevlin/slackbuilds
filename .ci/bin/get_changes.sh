@@ -8,7 +8,7 @@ for LIBFILE in $(ls ../lib/*.sh); do
 	fi
 done
 
-TMPDIR=${TMPDIR:-'../tmp'}
+TMPDIR=${TMPDIR:-'.ci/tmp'}
 
 readonly OLD_COMMIT_FILE="${TMPDIR}/commit.txt"
 readonly CHNG_SLKBLDS_FILE="${TMPDIR}/slackbuilds.txt"
