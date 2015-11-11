@@ -26,13 +26,13 @@ run_script()
     return ${?}
 }
 
-run_script sh ${BIN_ROOT}/pre-build.sh
+run_script ${BIN_ROOT}/pre-build.sh
 
 if [ ${?} -eq 0 ]; then
-    run_script sh ${BIN_ROOT}/build-pkgs.sh \
+    run_script ${BIN_ROOT}/build-pkgs.sh \
         || exit ${?}
 
-    run_script sh ${BIN_ROOT}/post-build.sh \
+    run_script ${BIN_ROOT}/post-build.sh \
         || exit ${?}
 
 elif [ ${?} -eq -1 ]; then
