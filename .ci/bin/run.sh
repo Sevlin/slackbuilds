@@ -9,7 +9,7 @@ done
 readonly CI_ROOT='./.ci'
 readonly BIN_ROOT="${CI_ROOT}/bin"
 
-if [ ! -d "${CI_ROOT}" ]; then
+if [ ! -d "${CI_ROOT}/tmp" ]; then
 	mkdir -pv "${CI_ROOT}/tmp"
 fi
 
