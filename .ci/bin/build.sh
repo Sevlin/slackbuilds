@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -e
+set -e
 
 for LIBFILE in $(ls .ci/lib/*.sh); do
     if [ -x "${LIBFILE}" ]; then

@@ -35,8 +35,7 @@ prepare_queue()
     if [ "${BUILD_ARCH}" == 'x86_64' ]; then
         # Use default sources if no arch-dependent
         # sources specified
-        if [ -z "${DOWNLOAD_x86_64}" ] \
-        || [ -z "${MD5SUM_x86_64}" ]; then
+        if [ -z "${DOWNLOAD_x86_64}" ]; then
             DWN_QUEUE=(${DOWNLOAD})
             MD5_SUMS=(${MD5SUM})
             OUT_FILES=(${OUTFILE})
