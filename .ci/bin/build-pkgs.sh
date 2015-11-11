@@ -66,7 +66,7 @@ build_pkg()
     if [ ${?} -ne 0 ]; then
         exit ${?}
     fi
-        echo -e '\n\n\n'
+        echo
     popd
 
     unset sb_path sb_dir sb_file
