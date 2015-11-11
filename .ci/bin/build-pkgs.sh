@@ -34,8 +34,8 @@ download_src()
 {
     local sb_path=${1}
 
-    exec bash -i -c "./.ci/bin/download-src.sh '${sb_path}'" &
-    wait $!
+    exec bash .ci/bin/download-src.sh "${sb_path}" &
+    wait ${!}
 
     if [ ${?} -ne 0 ]; then
         exit 1
@@ -61,11 +61,11 @@ build_pkg()
     pushd ${sb_dir}
         pmsg 'i' "Running build script ${COLYLW}${sb_file}${COLNON}..."
         echo
-        exec bash -i -c "fakeroot ./${sb_file}" &
+        exec fakeroot sh "${sb_file}" &
         wait ${!}
-	if [ ${?} -ne 0 ]; then
-	    exit ${?}
-	fi
+    if [ ${?} -ne 0 ]; then
+        exit ${?}
+    fi
         echo -e '\n\n\n'
     popd
 

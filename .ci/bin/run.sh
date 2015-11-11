@@ -12,27 +12,27 @@ for LIBFILE in $(ls .ci/lib/*.sh); do
     fi
 done
 
-readonly CI_ROOT='./.ci'
+readonly CI_ROOT='.ci'
 readonly BIN_ROOT="${CI_ROOT}/bin"
 
 if [ ! -d "${CI_ROOT}/tmp" ]; then
-	mkdir -pv "${CI_ROOT}/tmp"
+    mkdir -pv "${CI_ROOT}/tmp"
 fi
 
 run_script()
 {
-    exec bash -i -c "${@}" &
+    exec bash "${@}" &
     wait ${!}
     return ${?}
 }
 
-run_script ${BIN_ROOT}/pre-build.sh
+run_script sh ${BIN_ROOT}/pre-build.sh
 
 if [ ${?} -eq 0 ]; then
-    run_script ${BIN_ROOT}/build-pkgs.sh \
+    run_script sh ${BIN_ROOT}/build-pkgs.sh \
         || exit ${?}
 
-    run_script ${BIN_ROOT}/post-build.sh \
+    run_script sh ${BIN_ROOT}/post-build.sh \
         || exit ${?}
 
 elif [ ${?} -eq -1 ]; then
