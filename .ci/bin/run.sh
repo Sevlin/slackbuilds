@@ -13,10 +13,15 @@ for LIBFILE in $(ls .ci/lib/*.sh); do
 done
 
 readonly CI_ROOT='.ci'
-readonly BIN_ROOT="${CI_ROOT}/bin"
+readonly BIN_DIR="${CI_ROOT}/bin"
+readonly TMP_DIR="${CI_ROOT}/tmp"
+readonly LOCK_FILE="${TMP_DIR}/.lock"
 
-if [ ! -d "${CI_ROOT}/tmp" ]; then
-    mkdir -pv "${CI_ROOT}/tmp"
+trap "rm -f ${LOCK_FILE}" EXIT TERM
+
+# Create tmp dir if missing
+if [ ! -d "${TMP_DIR}" ]; then
+    mkdir -pv "${TMP_DIR}"
 fi
 
 run_script()
@@ -26,13 +31,23 @@ run_script()
     return ${?}
 }
 
-run_script ${BIN_ROOT}/pre-build.sh
+
+# Exit if another instance is running
+if [ -f ${LOCK_FILE} ]; then
+    pmsg 'w' "Build ${COLRED}locked${NOCOL}! Another instance is running?"
+    exit 0
+fi
+
+# Create lock file
+touch ${LOCK_FILE}
+
+run_script ${BIN_DIR}/pre-build.sh
 
 if [ ${?} -eq 0 ]; then
-    run_script ${BIN_ROOT}/build-pkgs.sh \
+    run_script ${BIN_DIR}/build-pkgs.sh \
         || exit ${?}
 
-    run_script ${BIN_ROOT}/post-build.sh \
+    run_script ${BIN_DIR}/post-build.sh \
         || exit ${?}
 
 elif [ ${?} -eq -1 ]; then
