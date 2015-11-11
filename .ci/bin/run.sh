@@ -12,13 +12,23 @@ run_script()
 {
     exec bash -i -c "${@}" &
     wait ${!}
-
-    if [ ${?} -ne 0 ]; then
-        exit ${?}
-    fi
+    return ${?}
 }
 
 run_script ${BIN_ROOT}/pre-build.sh
-run_script ${BIN_ROOT}/build-pkgs.sh
-run_script ${BIN_ROOT}/post-build.sh
 
+if [ ${?} -eq 0 ]; then
+    run_script ${BIN_ROOT}/build-pkgs.sh \
+        || exit ${?}
+
+    run_script ${BIN_ROOT}/post-build.sh \
+        || exit ${?}
+
+elif [ ${?} -eq -1 ]; then
+    # Skip build
+    exit 0
+else
+    exit ${?}
+fi
+
+exit 0

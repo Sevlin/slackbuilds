@@ -35,8 +35,8 @@ if [ ! -z "${SLKBLDS_LST}" ]; then
     | tr ' ' '\n' \
     | tee "${CHNG_SLKBLDS_FILE}"
 else
-    pmsg 'e' "No changed SlackBuilds found!"
-    exit 1
+    pmsg 'w' "No changed SlackBuilds found. Nothing to do."
+    exit -1
 fi
 
 exit 0
