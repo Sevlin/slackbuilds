@@ -61,7 +61,11 @@ build_pkg()
     pushd ${sb_dir}
         pmsg 'i' "Running build script ${COLYLW}${sb_file}${COLNON}..."
         echo
-        exec fakeroot bash ${sb_file}
+        exec bash -i -c "fakeroot ./${sb_file}" &
+        wait ${!}
+	if [ ${?} -ne 0 ]; then
+	    exit ${?}
+	fi
         echo -e '\n\n\n'
     popd
 

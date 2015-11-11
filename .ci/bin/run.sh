@@ -1,5 +1,11 @@
 #!/bin/bash
 
+BUILD_CPU_NICE=${BUILD_CPU_NICE:-19}
+BUILD_IO_NICE=${BUILD_IO_NICE:-3}
+
+renice -n ${BUILD_CPU_NICE} -p ${$}
+ionice -n ${BUILD_IO_NICE} -p ${$}
+
 for LIBFILE in $(ls .ci/lib/*.sh); do
     if [ -x "${LIBFILE}" ]; then
         source "${LIBFILE}"
