@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 for LIBFILE in $(ls .ci/lib/*.sh); do
     if [ -x "${LIBFILE}" ]; then
@@ -9,16 +9,17 @@ for LIBFILE in $(ls .ci/lib/*.sh); do
 done
 
 TMPDIR=${TMPDIR:-'.ci/tmp'}
-
-# phobos-NNN - i486 build server
-# deimos-NNN - amd64, noarch build server
-SKIP_NOARCH=${SKIP_NOARCH:-'yes'}
-if [[ "$(hostname)" =~ ^phobos-* ]]; then
-    SKIP_NOARCH='yes'
-fi
+BUILD_ARCH=$(uname -m)
 
 readonly OLD_COMMIT_FILE="${TMPDIR}/commit.txt"
 readonly CHNG_SLKBLDS_FILE="${TMPDIR}/slackbuilds.txt"
+
+# phobos-NNN - i486 build server
+# deimos-NNN - amd64, noarch build server
+SKIP_NOARCH=${SKIP_NOARCH:-'no'}
+if [[ "$(hostname)" =~ ^phobos-* ]]; then
+    SKIP_NOARCH='yes'
+fi
 
 read_slckbld_changes()
 {
@@ -32,19 +33,15 @@ read_slckbld_changes()
 download_src()
 {
     local sb_path=${1}
-    local sb_dir=$(dirname ${sb_path})
-    local sb_info="$(basename ${sb_path} .SlackBuild).info"
 
-    pushd ${sb_dir}
-        # Check availability of information file
-        if [ ! -r "${sb_info}" ]; then
-            pmsg 'e' "Missing ${sb_info}!"
-            pmsg 'e' "Can't download sources!"
-            exit 1
-        fi
-    popd
+    exec bash -i -c "./.ci/bin/download.sh '${sb_path}'" &
+    wait $!
 
-    unset sb_path sb_dir sb_info
+    if [ ${?} -ne 0 ]; then
+        exit 1
+    fi
+
+    unset sb_path
 }
 
 build_pkg()
@@ -85,8 +82,16 @@ upd_last_commit()
 read_slckbld_changes
 
 for SLKBLD in ${SLKBLDS_LIST[*]}; do
-    download_src "${SLKBLD}"
-    build_pkg "${SLKBLD}"
+    if grep -qP 'ARCH=.noarch.' ${SLKBLD} \
+    && [ "${SKIP_NOARCH}" == 'yes' ]; then
+        pmsg 'w' "Skipping noarch SlackBuild ${COLYLW}${SLKBLD}${COLNON}..."
+    else
+        pmsg 'i' "Processing ${COLYLW}${SLKBLD}${COLNON}"
+        download_src "${SLKBLD}"
+        build_pkg "${SLKBLD}"
+        echo "================"
+    fi
 done
 
 exit 0
+
