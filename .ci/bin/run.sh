@@ -6,7 +6,12 @@ for LIBFILE in $(ls .ci/lib/*.sh); do
     fi
 done
 
-readonly BIN_ROOT='./.ci/bin'
+readonly CI_ROOT='./.ci'
+readonly BIN_ROOT="${CI_ROOT}/bin"
+
+if [ ! -d "${CI_ROOT}" ]; then
+	mkdir -pv "${CI_ROOT}/tmp"
+fi
 
 run_script()
 {
