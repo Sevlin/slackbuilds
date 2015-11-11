@@ -34,7 +34,7 @@ download_src()
 {
     local sb_path=${1}
 
-    exec bash -i -c "./.ci/bin/download.sh '${sb_path}'" &
+    exec bash -i -c "./.ci/bin/download-src.sh '${sb_path}'" &
     wait $!
 
     if [ ${?} -ne 0 ]; then
