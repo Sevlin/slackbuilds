@@ -91,6 +91,10 @@ mkdir -p $PKG/{etc,var/lib}/gitlab-runner \
 	 $PKG/etc/{rc.d,default} \
 	 $PKG/etc/gitlab-runner/
 
+# Change owner for runner's home dir
+chown ${GITLABRUNNERUSER}:${GITLABRUNNERGROUP} \
+	$PKG/var/lib/gitlab-runner
+
 # Copy start-up script
 cat ${CWD}/rc.gitlab-runner \
   > ${PKG}/etc/rc.d/rc.gitlab-runner.new
