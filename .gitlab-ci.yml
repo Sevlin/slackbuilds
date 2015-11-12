@@ -1,0 +1,12 @@
+stages:
+    - build
+
+build-packages:
+    stage: build
+    tags:
+        - i486
+        - x86_64
+        - noarch
+    script:
+        - bash .ci/bin/run.sh
+
