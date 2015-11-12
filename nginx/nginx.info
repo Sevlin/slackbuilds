@@ -1,8 +1,18 @@
 PRGNAM="nginx"
 VERSION="1.8.0"
 HOMEPAGE="http://nginx.org/"
-DOWNLOAD="http://nginx.org/download/nginx-1.8.0.tar.gz https://www.modsecurity.org/tarball/2.9.0/modsecurity-2.9.0.tar.gz https://github.com/openresty/headers-more-nginx-module/archive/v0.28.tar.gz https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.5.tar.gz https://dl.google.com/dl/linux/mod-pagespeed/tar/beta/mod-pagespeed-beta-1.9.32.10-r7423.tar.bz2 https://dl.google.com/dl/page-speed/psol/1.9.32.10.tar.gz"
-MD5SUM="3ca4a37931e9fa301964b8ce889da8cb ecf42d21f26338443d7111891851628c 99940a452b4f1a56613d5e78c9f91181 6d28dfd6cef1f130a1df97d61425798c d251403b979a3c0cb17d10ab3427f2f7 c4069b751887d736f643ba698239c514"
+DOWNLOAD="http://nginx.org/download/nginx-1.8.0.tar.gz \
+	  https://www.modsecurity.org/tarball/2.9.0/modsecurity-2.9.0.tar.gz \
+          https://github.com/openresty/headers-more-nginx-module/archive/v0.28.tar.gz \
+          https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.5.tar.gz \
+          https://github.com/pagespeed/ngx_pagespeed/archive/v1.9.32.10-beta.tar.gz \
+          https://dl.google.com/dl/page-speed/psol/1.9.32.10.tar.gz"
+MD5SUM="3ca4a37931e9fa301964b8ce889da8cb \
+        ecf42d21f26338443d7111891851628c \
+        99940a452b4f1a56613d5e78c9f91181 \
+        6d28dfd6cef1f130a1df97d61425798c \
+        5921d497f849cb8c87cfa17aeefdf815 \
+        c4069b751887d736f643ba698239c514"
 DOWNLOAD_x86_64=""
 MD5SUM_x86_64=""
 REQUIRES=""
