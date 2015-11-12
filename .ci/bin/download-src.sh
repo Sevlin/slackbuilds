@@ -10,7 +10,7 @@ done
 
 TMPDIR=${TMPDIR:-'.ci/tmp'}
 SRC_LST="${TMPDIR}/sources.txt"
-BUILD_ARCH=$(uname -m)
+MACHINE_ARCH=$(uname -m)
 
 SB_PATH=${1}
 SB_DIR=$(dirname ${SB_PATH})
@@ -32,19 +32,37 @@ prepare_queue()
 
     source ${SB_INFO}
 
-    if [ "${BUILD_ARCH}" == 'x86_64' ]; then
-        # Use default sources if no arch-dependent
-        # sources specified
-        if [ -z "${DOWNLOAD_x86_64}" ]; then
+    # Use default sources if no arch-dependent
+    # sources specified
+    case "${MACHINE_ARCH}" in
+        x86_64)
+            if [ -z "${DOWNLOAD_x86_64}" ]; then
+                DWN_QUEUE=(${DOWNLOAD})
+                MD5_SUMS=(${MD5SUM})
+                OUT_FILES=(${DOWNLOAD_OUTFILE})
+            else
+                DWN_QUEUE=(${DOWNLOAD_x86_64})
+                MD5_SUMS=(${MD5SUM_x86_64})
+                OUT_FILES=(${DOWNLOAD_OUTFILE_x86_64})
+            fi
+        ;;
+        arm*)
+            if [ -z "${DOWNLOAD_ARM}" ]; then
+                DWN_QUEUE=(${DOWNLOAD})
+                MD5_SUMS=(${MD5SUM})
+                OUT_FILES=(${DOWNLOAD_OUTFILE})
+            else
+                DWN_QUEUE=(${DOWNLOAD_ARM})
+                MD5_SUMS=(${MD5SUM_ARM})
+                OUT_FILES=(${DOWNLOAD_OUTFILE_ARM})
+            fi
+        ;;
+        *)
             DWN_QUEUE=(${DOWNLOAD})
             MD5_SUMS=(${MD5SUM})
-            OUT_FILES=(${OUTFILE})
-        else
-            DWN_QUEUE=(${DOWNLOAD_x86_64})
-            MD5_SUMS=(${MD5SUM_x86_64})
-            OUT_FILES=(${OUTFILE_x86_64})
-        fi
-    fi
+            OUT_FILES=(${DOWNLOAD_OUTFILE})
+        ;;
+    esac
 }
 
 download_file()
