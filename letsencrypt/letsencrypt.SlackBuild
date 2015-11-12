@@ -76,11 +76,16 @@ HOME=$TMP/$PRGNAM-$VERSION \
 HOME=$TMP/$PRGNAM-$VERSION \
    virtualenv -p python2 --relocatable venv
 
-mkdir -p $PKG/opt/$PRGNAM
+# Create directories
+mkdir -p $PKG/opt/$PRGNAM \
+         $PKG/usr/sbin \
+         $PKG/{etc,var/lib}/letsencrypt
+
+# Copy distribution
 cp -dpr --no-preserve=ownership ./* \
 	$PKG/opt/$PRGNAM
 
-mkdir -p $PKG/usr/sbin
+# Create symlinks
 pushd $PKG/usr/sbin
 ln -sf ../../opt/letsencrypt/venv/bin/letsencrypt .
 ln -sf ../../opt/letsencrypt/venv/bin/letsencrypt-renewer .
