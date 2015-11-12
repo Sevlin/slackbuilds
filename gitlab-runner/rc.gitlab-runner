@@ -42,7 +42,7 @@ glrunner_stop()
         echo -n "Shutting down GitLab CI runner..."
         if [ -r ${RUNNER_PIDFILE} ]; then
                 PID=$(cat ${RUNNER_PIDFILE})
-                MSG=$(kill -QUIT ${PID} 2>&1)
+                MSG=$(kill -TERM ${PID} 2>&1)
                 if [ ${?} -eq 0 ]; then
                         wait_pid ${PID}
                         echo "done"
