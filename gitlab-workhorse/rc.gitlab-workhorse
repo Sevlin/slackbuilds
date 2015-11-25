@@ -38,7 +38,7 @@ as_user()
         fi
 }
 
-glghttp_start()
+glwrkhrs_start()
 {
 	local pprof_listen=''
 	[[ ! -z "${OPT_PPROF_LISTEN}" ]] \
@@ -50,7 +50,7 @@ glghttp_start()
         as_user "${CMD}"
 }
 
-glghttp_stop()
+glwrkhrs_stop()
 {
         echo -n "Shutting down GitLab Git-HTTP server..."
         PID=$(pgrep -U ${GITLAB_USER} gitlab-git-http)
@@ -67,16 +67,16 @@ glghttp_stop()
         fi
 }
 
-glghttp_restart()
+glwrkhrs_restart()
 {
-	glghttp_stop
-	glghttp_start
+	glwrkhrs_stop
+	glwrkhrs_start
 }
 
 case "${1}" in
-	'start'   ) glghttp_start   ;;
-	'stop'    ) glghttp_stop    ;;
-	'restart' ) glghttp_restart ;;
+	'start'   ) glwrkhrs_start   ;;
+	'stop'    ) glwrkhrs_stop    ;;
+	'restart' ) glwrkhrs_restart ;;
 	*)
 		echo "Usage: ${0} {start|stop|restart}"
 		exit 1
