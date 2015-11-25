@@ -22,5 +22,5 @@ preserve_perms() {
   config ${NEW}
 }
 
-config etc/default/gitlab-git-http-server.new
-preserve_perms etc/rc.d/rc.gitlab-git-http-server.new
+config etc/default/gitlab-workhorse.new
+preserve_perms etc/rc.d/rc.gitlab-workhorse.new

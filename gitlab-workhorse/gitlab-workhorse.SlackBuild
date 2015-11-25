@@ -22,7 +22,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=gitlab-git-http-server
+PRGNAM=gitlab-workhorse
 VERSION=${VERSION:-0.3.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -103,7 +103,7 @@ make
 
 # Install
 mkdir -p ${PKG}/usr/sbin
-install -m 0755 gitlab-git-http-server ${PKG}/usr/sbin
+install -m 0755 gitlab-workhorse ${PKG}/usr/sbin
 
 # Strip ELF binaries
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
@@ -118,16 +118,16 @@ cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 # Install accompanying scripts and configs.
 mkdir -p $PKG/etc/rc.d \
 	 $PKG/etc/default
-install -m 0644 $CWD/rc.gitlab-git-http-server \
-	        $PKG/etc/rc.d/rc.gitlab-git-http-server.new
-install -m 0644 $CWD/gitlab-git-http-server.default \
-		$PKG/etc/default/gitlab-git-http-server.new
+install -m 0644 $CWD/rc.gitlab-workhorse \
+	        $PKG/etc/rc.d/rc.gitlab-workhorse.new
+install -m 0644 $CWD/gitlab-workhorse.default \
+		$PKG/etc/default/gitlab-workhorse.new
 sed -i -e "s|%GITLABUSER%|${GITLABUSER}|g" \
        -e "s|%GITLABGROUP%|${GITLABGROUP}|g" \
        -e "s|%PIDDIR%|/${PIDDIR%/}|g" \
        -e "s|%LOGDIR%|/${LOGDIR%/}|g" \
-	 $PKG/etc/rc.d/rc.gitlab-git-http-server.new \
-	 $PKG/etc/default/gitlab-git-http-server.new \
+	 $PKG/etc/rc.d/rc.gitlab-workhorse.new \
+	 $PKG/etc/default/gitlab-workhorse.new \
 
 # Installation scripts
 mkdir -p $PKG/install

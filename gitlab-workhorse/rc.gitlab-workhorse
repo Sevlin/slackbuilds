@@ -4,14 +4,14 @@ if [ -r /etc/default/gitlab ]; then
 	source /etc/default/gitlab
 fi
 
-if [ -r /etc/default/gitlab-git-http-server ]; then
-	source /etc/default/gitlab-git-http-server
+if [ -r /etc/default/gitlab-workhorse ]; then
+	source /etc/default/gitlab-workhorse
 fi
 
 GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
 LOGDIR=${LOGDIR:-%LOGDIR%}
-HTTP_SRV_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-git-http-server}
-HTTP_SRV_PIDFILE=${HTTP_SRV_PIDFILE:-%PIDDIR%/gitlab-git-http-server.pid}
+HTTP_SRV_BIN=${BUNDLER_BIN:-/usr/sbin/gitlab-workhorse}
+HTTP_SRV_PIDFILE=${HTTP_SRV_PIDFILE:-%PIDDIR%/gitlab-workhorse.pid}
 OPT_AUTH_BACKEND=${OPT_AUTH_BACKEND:-http://localhost:8080}
 OPT_LISTEN_ADDR=${OPT_LISTEN_ADDR:-%PIDDIR%/git-http.socket}
 OPT_LISTEN_NET=${OPT_LISTEN_NET:-unix}
@@ -46,7 +46,7 @@ glghttp_start()
 
         CMD="${HTTP_SRV_BIN} -authBackend='${OPT_AUTH_BACKEND}' -listenAddr='${OPT_LISTEN_ADDR}' -listenNetwork='${OPT_LISTEN_NET}' -listenUmask=${OPT_LISTEN_UMASK} ${pprof_listen}"
         echo "Starting GitLab Git-HTTP server: ${CMD}"
-        CMD="${CMD} 1>>${LOGDIR%/}/gitlab-git-http-server.stdout.log 2>>${LOGDIR%/}/gitlab-git-http-server.stderr.log"
+        CMD="${CMD} 1>>${LOGDIR%/}/gitlab-workhorse.stdout.log 2>>${LOGDIR%/}/gitlab-workhorse.stderr.log"
         as_user "${CMD}"
 }
 

@@ -6,14 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
                       |-----handy-ruler------------------------------------------------------|
-gitlab-git-http-server: Git-HTTP server (Git-HTTP proxy for GitLab)
-gitlab-git-http-server:
-gitlab-git-http-server: This HTTP server is used by GitLab project to decrease Git-related
-gitlab-git-http-server: payload on Unicorn application server.
-gitlab-git-http-server: 
-gitlab-git-http-server: Homepage: https://gitlab.com/
-gitlab-git-http-server:
-gitlab-git-http-server:
-gitlab-git-http-server:
-gitlab-git-http-server:
-gitlab-git-http-server:
+gitlab-workhorse: Git-HTTP server (Git-HTTP proxy for GitLab)
+gitlab-workhorse:
+gitlab-workhorse: This HTTP server is used by GitLab project to decrease Git-related
+gitlab-workhorse: payload on Unicorn application server.
+gitlab-workhorse: 
+gitlab-workhorse: Homepage: https://gitlab.com/
+gitlab-workhorse:
+gitlab-workhorse:
+gitlab-workhorse:
+gitlab-workhorse:
+gitlab-workhorse:
