@@ -45,14 +45,14 @@ glwrkhrs_start()
 		&& pprof_listen="-pprofListenAddr='${OPT_PPROF_LISTEN}'"
 
         CMD="${HTTP_SRV_BIN} -authBackend='${OPT_AUTH_BACKEND}' -listenAddr='${OPT_LISTEN_ADDR}' -listenNetwork='${OPT_LISTEN_NET}' -listenUmask=${OPT_LISTEN_UMASK} ${pprof_listen}"
-        echo "Starting GitLab Git-HTTP server: ${CMD}"
+        echo "Starting GitLab Workhorse server: ${CMD}"
         CMD="${CMD} 1>>${LOGDIR%/}/gitlab-workhorse.stdout.log 2>>${LOGDIR%/}/gitlab-workhorse.stderr.log"
         as_user "${CMD}"
 }
 
 glwrkhrs_stop()
 {
-        echo -n "Shutting down GitLab Git-HTTP server..."
+        echo -n "Shutting down GitLab Workhorse server..."
         PID=$(pgrep -U ${GITLAB_USER} gitlab-git-http)
         MSG=$(kill -QUIT ${PID} 2>&1)
        	if [ ${?} -eq 0 ]; then
