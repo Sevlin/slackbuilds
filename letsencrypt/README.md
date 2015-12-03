@@ -4,6 +4,5 @@ on production systems.
 
 - - - -
 
-For more information regarding the status of the project, please see
-https://letsencrypt.org. Be sure to checkout the
-`Frequently Asked Questions (FAQ) <https://community.letsencrypt.org/t/frequently-asked-questions-faq/26#topic-title>`_.
+For more information regarding the status of the project, please see https://letsencrypt.org.
+Be sure to checkout the Frequently Asked Questions [(FAQ)](https://community.letsencrypt.org/t/frequently-asked-questions-faq/26#topic-title).
