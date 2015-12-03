@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=letsencrypt
-VERSION=${VERSION:-0.0.0.dev20151123}
+VERSION=${VERSION:-0.1.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -101,7 +101,7 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
 # Copy program documentation into the package
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  README.rst LICENSE.txt CONTRIBUTING.md CHANGES.rst letsencrypt/DISCLAIMER \
+  README.rst LICENSE.txt CONTRIBUTING.md CHANGES.rst \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 

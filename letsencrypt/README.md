@@ -1,8 +1,9 @@
-This is a **PREVIEW RELEASE** of a client application for the Let's Encrypt certificate authority and other services using the ACME protocol.  
-The Let's Encrypt certificate authority is **NOT YET ISSUING CERTIFICATES TO THE PUBLIC**.
+The Let's Encrypt Client is **BETA SOFTWARE**. It contains plenty of bugs and
+rough edges, and should be tested thoroughly in staging environments before use
+on production systems.
 
-- - -
+- - - -
 
-Until publicly-trusted certificates can be issued by Let's Encrypt, this software CANNOT OBTAIN A PUBLICLY-TRUSTED CERTIFICATE FOR YOUR WEB SERVER.  You should only use this program if you are a developer interested in experimenting with the ACME protocol or in helping to improve this software.  If you want to configure your web site with HTTPS in the meantime, please obtain a certificate from a different authority.  
-
-For updates on the status of Let's Encrypt, please visit the Let's Encrypt home page at https://letsencrypt.org/.
+For more information regarding the status of the project, please see
+https://letsencrypt.org. Be sure to checkout the
+`Frequently Asked Questions (FAQ) <https://community.letsencrypt.org/t/frequently-asked-questions-faq/26#topic-title>`_.
