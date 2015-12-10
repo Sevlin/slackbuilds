@@ -4,7 +4,7 @@
 
 PRGNAM=murmur
 SRCNAM=mumble
-VERSION=${VERSION:-1.2.9}
+VERSION=${VERSION:-1.2.11}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -17,9 +17,10 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/build}
+TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-2}
 
 MURMUR_GROUP=${MURMUR_GROUP:-murmur}
 MURMUR_USER=${MURMUR_USER:-murmur}
@@ -58,7 +59,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $SRCNAM-$VERSION
-tar xvf $CWD/$SRCNAM-$VERSION.tar.gz
+tar xvf $CWD/$VERSION.tar.gz
 cd $SRCNAM-$VERSION
 chown -R root:root .
 find . \
@@ -66,12 +67,6 @@ find . \
  -exec chmod 755 {} \; -o \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
  -exec chmod 644 {} \;
-
-# PostgreSQL support patch
-# http://sourceforge.net/p/mumble/patches/368/
-if [ "${WITH_PGSQL}" = 'yes' ]; then
-    cat ${CWD}/pgsql-support.patch | patch -p1
-fi
 
 qmake \
   -recursive \
@@ -83,7 +78,7 @@ qmake \
   CONFIG+=no-ice \
   CONFIG+=no-bonjour
 
-make release
+make -j ${NUMJOBS} release
 
 mkdir -p \
   $PKG/etc/{logrotate.d,rc.d,dbus-1/system.d} \
@@ -104,7 +99,7 @@ sed \
   -e "s,logfile=.*,logfile=/var/log/$PRGNAM/$PRGNAM.log," \
   -e "s,pidfile=.*,pidfile=/var/run/$PRGNAM/$PRGNAM.pid," \
   -e "s,uname=.*,uname=$MURMUR_USER," \
- scripts/murmur.ini.system > $PKG/etc/$PRGNAM.ini.new
+ scripts/murmur.ini > $PKG/etc/$PRGNAM.ini.new
 
 sed \
   -i "s,PIDFILE=.*,PIDFILE=/var/run/$PRGNAM/$PRGNAM.pid," \
@@ -133,13 +128,6 @@ cp -a \
   CHANGES INSTALL LICENSE README README.Linux \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
-
-# Build package dependencies list
-if [ "${MKDEPS}" = yes ]; then
-    [[ -x /usr/bin/depfinder ]] \
-        & ( /usr/bin/depfinder -a $PKG > \
-                        $CWD/slack-required || true )
-fi
 
 # Installation scripts
 mkdir -p $PKG/install

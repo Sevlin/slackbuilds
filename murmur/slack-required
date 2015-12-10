@@ -1,1 +1,1 @@
-aaa_elflibs|attr,aaa_elflibs|gcc,glib2,libcap,zlib,cxxlibs|gcc-g++,openssl-solibs|openssl,protobuf,qt
+attr,aaa_elflibs|gcc,glib2,libcap,zlib,cxxlibs|gcc-g++,openssl-solibs|openssl,protobuf,qt
