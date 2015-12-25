@@ -4,7 +4,7 @@
 
 PRGNAM=murmur
 SRCNAM=mumble
-VERSION=${VERSION:-1.2.11}
+VERSION=${VERSION:-1.2.12}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
