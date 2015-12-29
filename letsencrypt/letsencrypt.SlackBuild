@@ -119,4 +119,4 @@ done
 
 # Make the package
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-${VERSION//-/_}-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
