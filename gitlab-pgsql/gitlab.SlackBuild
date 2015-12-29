@@ -171,7 +171,7 @@ sed -e "s|# user: git|user: ${GITLABUSER}|" \
     -e "s|/home/git/gitlab-satellites|/${DOCROOT%/}/${PRGNAM}/satellites|g" \
     -e "s|/home/git/gitlab-shell|/${PRGHOME%/}|g" \
     -e "s|/home/git/gitlab|/${DOCROOT%/}/${PRGNAM}|g" \
-    -e "s|tmp/backups|backups|g" \
+    -e "s|tmp/backups|/${PRGHOME%/}/backups|g" \
        $PKG/$DOCROOT/$PRGNAM/config/gitlab.yml.example \
      > $PKG/$DOCROOT/$PRGNAM/config/gitlab.yml.new
 
