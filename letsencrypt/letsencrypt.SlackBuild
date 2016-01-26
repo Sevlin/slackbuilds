@@ -72,7 +72,7 @@ find -L . \
 HOME=$TMP/$PRGNAM-$VERSION \
   virtualenv -p python2 venv
 HOME=$TMP/$PRGNAM-$VERSION \
-  ./venv/bin/pip install -r py26reqs.txt acme/ . letsencrypt-apache/ letsencrypt-nginx/
+  ./venv/bin/pip install acme/ . letsencrypt-apache/ letsencrypt-nginx/ letshelp-letsencrypt/
 HOME=$TMP/$PRGNAM-$VERSION \
    virtualenv -p python2 --relocatable venv
 
