@@ -24,12 +24,18 @@ as_user()
 cleanup()
 {
         find ${DOCROOT}/backups/ \
-               -type f -name '*_gitlab_backup.tar' \
+               -type f -name '*_gitlab_backup.tar.?z*' \
                -mtime +${BCKUP_DAYS} -delete
+}
+
+compress()
+{
+        xz ${DOCROOT}/backups/*_gitlab_backup.tar
 }
 
 cleanup
 as_user "cd ${DOCROOT} && ${BUNDLE_BIN} exec rake gitlab:backup:create"
+compress
 
 exit ${?}
 
