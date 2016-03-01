@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -r /etc/default/gitlab ]; then
-	source /etc/default/gitlab
+        source /etc/default/gitlab
 fi
 
 GITLAB_USER=${GITLAB_USER:-%GITLABUSER%}
@@ -9,16 +9,34 @@ BUNDLE_BIN=${BUNDLE_BIN:-/usr/bin/bundle}
 DOCROOT=${DOCROOT:-%DOCROOT%}
 RAILS_ENV=${RAILS_ENV:-production}
 BCKUP_DAYS=${BCKUP_DAYS:=7}
+LOCKFILE=${LOCKFILE:-/tmp/gitlab-backup.lock}
 
-ME="$(whoami)"
+if [ -e "${LOCKFILE}" ]; then
+        echo "GitLab backup is locked by another running instance!" 1>&2
+        exit 1
+if
+
+
+pre_run()
+{
+        touch "${LOCKFILE}"
+}
+
+on_exit()
+{
+        if [ -e "${LOCKFILE}" ]; then
+                rm -f "${LOCKFILE}"
+        fi
+}
 
 as_user()
 {
-	if [ "${ME}" != "${GITLAB_USER}" ]; then
-		su -l ${GITLAB_USER} -c "${@}"
-	else
-		bash -c "${@}"
-	fi
+        ME="$(whoami)"
+        if [ "${ME}" != "${GITLAB_USER}" ]; then
+                su -l ${GITLAB_USER} -c "${@}"
+        else
+                bash -c "${@}"
+        fi
 }
 
 cleanup()
@@ -33,6 +51,9 @@ compress()
         xz ${DOCROOT}/backups/*_gitlab_backup.tar
 }
 
+trap on_exit EXIT
+
+pre_run
 cleanup
 as_user "cd ${DOCROOT} && ${BUNDLE_BIN} exec rake gitlab:backup:create"
 compress
