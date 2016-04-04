@@ -214,6 +214,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-mail \
   --with-mail_ssl_module \
   --with-http_v2_module \
+  --with-threads \
   $EXTRA_MODS
 
 make -j ${NUMJOBS}
