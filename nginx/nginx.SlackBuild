@@ -213,7 +213,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-http_auth_request_module \
   --with-mail \
   --with-mail_ssl_module \
-  --with-http_spdy_module \
+  --with-http_v2_module \
   $EXTRA_MODS
 
 make -j ${NUMJOBS}
