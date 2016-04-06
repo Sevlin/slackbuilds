@@ -24,7 +24,7 @@ set -e
 
 PRGNAM=jabberd2
 SRCNAM=jabberd
-VERSION=${VERSION:-2.3.4}
+VERSION=${VERSION:-2.3.6}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
