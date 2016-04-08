@@ -29,7 +29,7 @@
 # Special thanks to Thomas Morper for some configuration adjustments tips
 
 PRGNAM=nginx
-VERSION=${VERSION:-1.9.13}
+VERSION=${VERSION:-1.9.14}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 # Third-party modules
@@ -40,7 +40,7 @@ HDRSMOREVERSION=${HDRSMOREVERSION:-0.29}
 FANCYINDEXNAM=ngx-fancyindex
 FANCYINDEXVERSION=${FANCYINDEXVERSION:-0.3.6}
 PAGESPEEDNAM=ngx_pagespeed
-PAGESPEEDVERSION=${PAGESPEEDVERSION:-1.9.32.10}
+PAGESPEEDVERSION=${PAGESPEEDVERSION:-1.10.33.0}
 
 
 if [ -z "$ARCH" ]; then
