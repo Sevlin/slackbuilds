@@ -1,1 +1,1 @@
-gitlab|gitlab-pgsql|gitlab-mariadb,gitlab-shell
+gitlab-pgsql|gitlab-mariadb,gitlab-shell
