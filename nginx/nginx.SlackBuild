@@ -29,7 +29,7 @@
 # Special thanks to Thomas Morper for some configuration adjustments tips
 
 PRGNAM=nginx
-VERSION=${VERSION:-1.9.14}
+VERSION=${VERSION:-1.9.15}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 # Third-party modules
