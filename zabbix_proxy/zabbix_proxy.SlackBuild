@@ -107,7 +107,6 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-proxy \
   --enable-java \
   --with-sqlite3 \
-  --with-jabber \
   --with-libcurl \
   --with-net-snmp \
   --with-ssh2 \
