@@ -29,7 +29,7 @@
 # Special thanks to Thomas Morper for some configuration adjustments tips
 
 PRGNAM=nginx
-VERSION=${VERSION:-1.9.15}
+VERSION=${VERSION:-1.10.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 # Third-party modules
@@ -101,7 +101,7 @@ sed -i \
 
 # GeoIP module
 if [ "${NGINX_ENABLE_GEOIP}" == "yes" ]; then
-  EXTRA_MODS="${EXTRA_MODS} --with-http_geoip_module"
+  EXTRA_MODS="${EXTRA_MODS} --with-http_geoip_module=dynamic"
 fi
 
 # mod_security WAF
@@ -198,7 +198,8 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-http_ssl_module \
   --with-http_realip_module \
   --with-http_addition_module \
-  --with-http_xslt_module \
+  --with-http_xslt_module=dynamic \
+  --with-http_image_filter_module=dynamic \
   --with-http_sub_module \
   --with-http_dav_module \
   --with-http_flv_module \
@@ -209,9 +210,9 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-http_secure_link_module \
   --with-http_degradation_module \
   --with-http_stub_status_module \
-  --with-http_perl_module \
+  --with-http_perl_module=dynamic \
   --with-http_auth_request_module \
-  --with-mail \
+  --with-mail=dynamic \
   --with-mail_ssl_module \
   --with-http_v2_module \
   --with-threads \
