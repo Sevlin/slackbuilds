@@ -33,6 +33,7 @@ DOCROOT=${DOCROOT:-/var/www}
 
 PHPUSER=${PHPUSER:-root}
 PHPGROUP=${PHPGROUP:-apache}
+CRONUSER=${CRONUSER:-apache}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
@@ -94,6 +95,7 @@ done
 
 sed -i \
     -e "s|%DOCROOT%|${DOCROOT#/}|g" \
+    -e "s|%CRONUSER%|${CRONUSER}|" \
        ${PKG}/etc/cron.d/owncloud.new \
        ${PKG}/install/doinst.sh
 

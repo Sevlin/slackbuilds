@@ -2,8 +2,8 @@
 
 By default, there is only a sample config file included with the package. 
 
-You can override **DOCROOT**, **PHPUSER**, and **PHPGROUP** at build time.
-They default to **DOCROOT=/var/www/**, **PHPUSER=root**, **PHPGROUP=apache**.
+You can override **DOCROOT**, **PHPUSER**, **PHPGROUP** and **CRONUSER** at build time.
+They default to **DOCROOT=/var/www/**, **PHPUSER=root**, **PHPGROUP=apache**, **CRONUSER=apache**.
 
 For configuration help, you can visit:
-http://doc.owncloud.org/server/8.0/admin_manual/installation/index.html
+http://doc.owncloud.org/server/9.0/admin_manual/installation/index.html
