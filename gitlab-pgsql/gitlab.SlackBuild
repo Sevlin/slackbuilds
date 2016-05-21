@@ -154,7 +154,8 @@ install -d -m 0755 \
 	$PKG/$PIDDIR
 install -d -m 0770 \
 	-o $GITLABUSER -g $GITLABGROUP \
-	$PKG/$PRGHOME/backups
+	$PKG/$PRGHOME/backups \
+	$PKG/$PRGHOME/builds
 
 # Documentation
 mkdir -p $PKG/usr/doc
@@ -212,6 +213,7 @@ pushd $PKG/$DOCROOT/$PRGNAM;
      ln -sf ../../run/$PRGNAM sockets
      ln -sf ../../log/$PRGNAM log
      ln -sf ../../lib/$PRGNAM/backups backups
+     ln -sf ../../lib/$PRGNAM/builds builds
 popd
 
 # BASH settings
