@@ -1,14 +1,14 @@
 PRGNAM="nginx"
-VERSION="1.10.0"
+VERSION="1.10.1"
 HOMEPAGE="http://nginx.org/"
-DOWNLOAD="http://nginx.org/download/nginx-1.10.0.tar.gz \
+DOWNLOAD="http://nginx.org/download/nginx-1.10.1.tar.gz \
 	  https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz \
           https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz \
           https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.6.tar.gz \
           https://github.com/pagespeed/ngx_pagespeed/archive/v1.10.33.0-beta.tar.gz \
           https://dl.google.com/dl/page-speed/psol/1.10.33.0.tar.gz"
-MD5SUM="c184c873d2798c5ba92be95ed1209c02 \
-        ecf42d21f26338443d711.10.0851628c \
+MD5SUM="088292d9caf6059ef328aa7dda332e44 \
+        ecf42d21f26338443d711.10.1851628c \
         d91d7c0f9ce2c48e4786efa467176a4c \
         76ac525432d459a4615a3a8638195ba9 \
         dae5ac40535f4ff2fdb879c83f22e0b0 \
