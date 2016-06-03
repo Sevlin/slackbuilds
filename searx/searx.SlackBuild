@@ -1,0 +1,144 @@
+#!/bin/sh
+
+# Slackware build script for Searx
+
+# Copyright 2016, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=searx
+VERSION=${VERSION:-0.9.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build/${ARCH}}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+DOCROOT=${DOCROOT:-/var/www}
+SEARXUSER=${SEARXUSER:-searx}
+SEARXGROUP=${SEARXGROUP:-searx}
+SEARXUID=${SEARXUID:-513}
+SEARXGID=${SEARXGID:-513}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e # Exit on most errors
+
+# Check if the gitlab user and group exist. If not, then bail.
+if ! grep -q "^${SEARXGROUP}:" /etc/group ; then
+    echo "  You must have a \"${SEARXGROUP}\" group to run this script."
+    echo "    # groupadd -g ${SEARXGID} ${SEARXGROUP}"
+    exit 1
+fi
+
+if ! grep -q "^${SEARXUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${SEARXUSER}\" user to run this script."
+    echo "    # useradd -u ${SEARXUID} -g ${SEARXGROUP} -d ${DOCROOT}/searx -s /bin/false -c \"User for Searx\" ${SEARXUSER}"
+    exit 1
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/v$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+HOME=$TMP/$PRGNAM-$VERSION \
+  virtualenv -p python2 venv
+HOME=$TMP/$PRGNAM-$VERSION \
+  ./venv/bin/pip install --upgrade -r requirements.txt
+HOME=$TMP/$PRGNAM-$VERSION \
+   virtualenv -p python2 --relocatable venv
+
+# Create docroot
+mkdir -p $PKG/$DOCROOT/$PRGNAM
+
+# Copy distribution
+cp -dpr --no-preserve=ownership ./* \
+	$PKG/$DOCROOT/$PRGNAM
+
+# Chane ownership
+chown -R root:${SEARXGROUP} $PKG/$DOCROOT/$PRGNAM
+
+# Rename config file
+mv $PKG/$DOCROOT/$PRGNAM/searx/settings.yml \
+   $PKG/$DOCROOT/$PRGNAM/searx/settings.yml.new
+
+# Strip binaries and libraries
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Copy program documentation into the package
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  AUTHORS.rst CHANGELOG.rst LICENSE README.rst \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
+mkdir -p $PKG/install
+
+sed -e "s|%SEARXGID%|${SEARXGID}|g"     \
+    -e "s|%SEARXGROUP%|${SEARXGROUP}|g" \
+    -e "s|%SEARXUID%|${SEARXUID}|g"     \
+    -e "s|%SEARXUSER%|${SEARXUSER}|g"   \
+    -e "s|%DOCROOT%|${DOCROOT%/}/${PRGNAM}|g" \
+    ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+
+for INSTFILE in 'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
+
+# Make the package
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-${VERSION//-/_}-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
