@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Slackware build script for letsencrypt
+# Slackware build script for certbot
 
 # Copyright 2015, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
@@ -22,8 +22,8 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=letsencrypt
-VERSION=${VERSION:-0.5.0}
+PRGNAM=certbot
+VERSION=${VERSION:-0.8.1}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -72,14 +72,14 @@ find -L . \
 HOME=$TMP/$PRGNAM-$VERSION \
   virtualenv -p python2 venv
 HOME=$TMP/$PRGNAM-$VERSION \
-  ./venv/bin/pip install acme/ . letsencrypt-apache/ letsencrypt-nginx/ letshelp-letsencrypt/
+  ./venv/bin/pip install acme/ . certbot-apache/ certbot-nginx/ letshelp-certbot/ letshelp-letsencrypt/
 HOME=$TMP/$PRGNAM-$VERSION \
    virtualenv -p python2 --relocatable venv
 
 # Create directories
 mkdir -p $PKG/opt/$PRGNAM \
          $PKG/usr/sbin \
-         $PKG/{etc,var/lib}/letsencrypt
+         $PKG/{etc,var/lib}/certbot
 
 # Copy distribution
 cp -dpr --no-preserve=ownership ./* \
@@ -87,8 +87,9 @@ cp -dpr --no-preserve=ownership ./* \
 
 # Create symlinks
 pushd $PKG/usr/sbin
-ln -sf ../../opt/letsencrypt/venv/bin/letsencrypt .
-ln -sf ../../opt/letsencrypt/venv/bin/letsencrypt-renewer .
+ln -sf ../../opt/certbot/venv/bin/certbot .
+ln -sf ../../opt/certbot/certbot-auto .
+ln -sf ../../opt/certbot/letsencrypt-auto .
 popd
 
 # Remove git-related stuff
