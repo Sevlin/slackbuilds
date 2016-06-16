@@ -1,0 +1,2 @@
+# Nextcloud sheduled tasks
+*  *  *  *  *  ID=Nextcloud-cron FREQ=15m/1m /bin/su %CRONUSER% -c '/usr/bin/php -f /%DOCROOT%/nextcloud/cron.php' 1> /dev/null

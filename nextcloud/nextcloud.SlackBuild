@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Slackware package build script for Nextcloud
+# Home Page http://www.nextcloud.com/
+
+# Copyright 2013-2016 Mykyta Solomko, Kyiv, Ukraine, <sev@nix.org.ua>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM="nextcloud"
+VERSION=${VERSION:-9.0.50}
+ARCH="noarch"
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+
+DOCROOT=${DOCROOT:-/var/www}
+
+PHPUSER=${PHPUSER:-root}
+PHPGROUP=${PHPGROUP:-apache}
+CRONUSER=${CRONUSER:-apache}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build/${ARCH}}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -eu
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM
+tar xvf $CWD/v$VERSION.tar.?z*
+mv server-$VERSION $TMP/$PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
+chown -R ${PHPUSER}:${PHPGROUP} .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 -o -perm 644 \) \
+ -exec chmod 644 {} \;
+
+mkdir -p $PKG/$DOCROOT
+cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  AUTHORS COPYING-AGPL \
+    $PKG/usr/doc/$PRGNAM-$VERSION
+
+# Change ownership and perms and create a link.
+chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
+chmod 0755 $PKG/$DOCROOT/$PRGNAM
+
+mkdir $PKG/$DOCROOT/$PRGNAM/{data,assets}
+chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data,assets}
+chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
+chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
+
+
+# Rename default configuration files
+mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
+   $PKG/$DOCROOT/$PRGNAM/.htaccess.new
+
+# Cron job
+mkdir -p ${PKG}/etc/cron.d
+install -m 0644	${CWD}/nextcloud.cron ${PKG}/etc/cron.d/nextcloud.new
+
+mkdir -p $PKG/install
+for METAFILE in 'doinst.sh' \
+                'slack-conflicts' \
+                'slack-desc'      \
+                'slack-required'  \
+                'slack-suggests'
+do
+    [[ -f $CWD/$METAFILE ]] \
+        && cat $CWD/$METAFILE > $PKG/install/$METAFILE
+done
+
+sed -i \
+    -e "s|%DOCROOT%|${DOCROOT#/}|g" \
+    -e "s|%CRONUSER%|${CRONUSER}|" \
+       ${PKG}/etc/cron.d/nextcloud.new \
+       ${PKG}/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
