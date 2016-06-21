@@ -62,7 +62,7 @@ cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 # Change ownership and perms
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/{cache,files,store}
+chmod 0775 $PKG/$DOCROOT/$PRGNAM/{cache,files,store,images/avatars/upload}
 
 # Rename default configuration files
 mv $PKG/$DOCROOT/$PRGNAM/config.php \
