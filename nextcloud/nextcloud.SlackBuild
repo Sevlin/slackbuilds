@@ -46,8 +46,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM
-tar xvf $CWD/v$VERSION.tar.?z*
-mv server-$VERSION $TMP/$PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+mv $PRGNAM $TMP/$PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
