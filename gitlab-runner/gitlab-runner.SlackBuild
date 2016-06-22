@@ -82,7 +82,7 @@ wget -c https://gitlab-ci-multi-runner-downloads.s3.amazonaws.com/latest/binarie
      -O ${PKG}/usr/sbin/${PRGNAM}
 
 chmod 0755 ${PKG}/usr/sbin/${PRGNAM}
-VERSION=$(${PKG}/usr/sbin/${PRGNAM} --version | grep -oP '\d+(\.\d+)+')
+VERSION=$(${PKG}/usr/sbin/${PRGNAM} --version | head -1 | grep -oP '\d+(\.\d+)+')
 
 # Strip binary
 strip --strip-unneeded ${PKG}/usr/sbin/${PRGNAM} 2> /dev/null
