@@ -24,7 +24,6 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="tt-rss"
-ARCPRGNAM="Tiny-Tiny-RSS"
 VERSION=${VERSION:-16.3}
 ARCH="noarch"
 BUILD=${BUILD:-1}
@@ -45,9 +44,10 @@ set -eu
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-rm -rf $ARCPRGNAM-$VERSION
-tar xvf $CWD/$VERSION.tar.?z*
-cd $ARCPRGNAM-$VERSION
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+mv $PRGNAM.git $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
@@ -55,15 +55,15 @@ find . \
  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 -o -perm 644 \) \
  -exec chmod 644 {} \;
 
-find . \
-    -name '.empty' -delete
+find . -type f \
+	\( -name '.empty' -or -name '.git*' \) -delete
 
 mkdir -p $PKG/$DOCROOT
-cp -a $TMP/$ARCPRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
+cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-   LICENSE README.md \
+    README.md \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Change ownership and perms and create a link.
