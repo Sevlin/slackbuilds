@@ -25,7 +25,7 @@
 
 PRGNAM="tt-rss"
 ARCPRGNAM="Tiny-Tiny-RSS"
-VERSION=${VERSION:-1.15.3}
+VERSION=${VERSION:-16.3}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
