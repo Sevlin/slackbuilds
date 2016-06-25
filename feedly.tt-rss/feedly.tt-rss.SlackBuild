@@ -71,7 +71,7 @@ for METAFILE in 'slack-conflicts' \
                 'slack-desc'      \
                 'slack-required'  \
                 'slack-suggests'; do
-    [[ -f ${METAFILE} ]] \
+    [[ -f ${CWD}/${METAFILE} ]] \
         && cat $CWD/$METAFILE > $PKG/install/$METAFILE
 done
 
