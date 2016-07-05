@@ -73,7 +73,6 @@ chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data,assets}
 chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
 chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
 
-
 # Rename default configuration files
 mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
    $PKG/$DOCROOT/$PRGNAM/.htaccess.new
@@ -81,6 +80,9 @@ mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
 # Cron job
 mkdir -p ${PKG}/etc/cron.d
 install -m 0644	${CWD}/nextcloud.cron ${PKG}/etc/cron.d/nextcloud.new
+
+# Remove git-related junk
+#find $PKG/$DOCROOT/$PRGNAM -type f -name '.git*' -delete
 
 mkdir -p $PKG/install
 for METAFILE in 'doinst.sh' \
