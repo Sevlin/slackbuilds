@@ -10,6 +10,5 @@ config() {
   # Otherwise, we leave the .new copy for the admin to consider...
 }
 
-config var/www/mediawiki/skins/monobook/wiki.png.new
-config var/www/mediawiki/skins/common/images/wiki.png.new
+config var/www/mediawiki/skins/MonoBook/wiki.png.new
 

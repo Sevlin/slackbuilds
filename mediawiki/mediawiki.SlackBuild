@@ -58,10 +58,8 @@ find . \
 mkdir -p $PKG/$DOCROOT
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
-mv $PKG/$DOCROOT/$PRGNAM/skins/common/images/wiki.png \
-   $PKG/$DOCROOT/$PRGNAM/skins/common/images/wiki.png.new
-mv $PKG/$DOCROOT/$PRGNAM/skins/monobook/wiki.png \
-   $PKG/$DOCROOT/$PRGNAM/skins/monobook/wiki.png.new
+mv $PKG/$DOCROOT/$PRGNAM/skins/MonoBook/wiki.png \
+   $PKG/$DOCROOT/$PRGNAM/skins/MonoBook/wiki.png.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
