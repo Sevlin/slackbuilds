@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=gitlab-shell
-VERSION=${VERSION:-3.2.0}
+VERSION=${VERSION:-3.2.1}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 ARCH='noarch'
@@ -32,7 +32,6 @@ CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
-NUMJOBS=${NUMJOBS:-2}
 
 DOCROOT=${DOCROOT:-var/www}
 PRGHOME=${PRGHOME:-var/lib/gitlab}
@@ -79,7 +78,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/v$VERSION.tar.?z*
+tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+mv $PRGNAM-v$VERSION-* $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
