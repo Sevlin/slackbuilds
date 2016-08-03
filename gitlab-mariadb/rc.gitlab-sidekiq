@@ -35,7 +35,7 @@ as_user()
 
 glsidekiq_start()
 {
-        CMD="${BUNDLE_BIN} exec \"sidekiq -q post_receive -q mailer -q system_hook -q project_web_hook -q gitlab_shell -q common -q default -q archive_repo -e ${RAILS_ENV} -P ${SIDEKIQ_PIDFILE} -L ${SIDEKIQ_LOGFILE}\""
+        CMD="${BUNDLE_BIN} exec \"sidekiq -d -q post_receive -q mailer -q system_hook -q project_web_hook -q gitlab_shell -q common -q default -q archive_repo -e ${RAILS_ENV} -P ${SIDEKIQ_PIDFILE} -L ${SIDEKIQ_LOGFILE}\""
         echo "Starting GitLab Sidekiq: ${CMD}"
         CMD="cd ${DOCROOT} && ${CMD}"
         as_user "${CMD}" 
