@@ -126,6 +126,8 @@ find $TMP/$PRGNAM-$VERSION -type f \( -name '*.o' \
 	                           -o -name '.gitignore' \
 			           -o -name '.gitattributes' \
 			           -o -name '.gitmodules' \
+                                   -o -name '.travis.yml' \
+                                   -o -name '.gitlab-ci.yml' \
 			           \) -delete
 
 # Install GitLab into $DOCROOT/gitlab
