@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Slackware build script for letsencrypt.sh
+# Slackware build script for dehydrated
 
 # Copyright 2016, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
@@ -22,7 +22,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=letsencrypt.sh
+PRGNAM=dehydrated
 VERSION=${VERSION:-0.2.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -50,11 +50,11 @@ find -L . \
 
 # Create directories
 mkdir -p $PKG/usr/sbin \
-         $PKG/etc/letsencrypt.sh \
+         $PKG/etc/dehydrated \
          $PKG/var/www/letsencrypt
 
 # Copy script
-install -Dm755 -t "$PKG/usr/sbin/" letsencrypt.sh
+install -Dm755 -t "$PKG/usr/sbin/" dehydrated
 
 # Copy program documentation into the package
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
@@ -64,7 +64,7 @@ cp -ar \
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Create symlink to configuration examples
-pushd $PKG/etc/letsencrypt.sh
+pushd $PKG/etc/dehydrated
 ln -sf ../../usr/doc/$PRGNAM-$VERSION/examples examples
 popd
 
