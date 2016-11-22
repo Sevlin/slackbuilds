@@ -50,8 +50,8 @@ find -L . \
 
 # Create directories
 mkdir -p $PKG/usr/sbin \
-         $PKG/etc/dehydrated \
-         $PKG/var/www/letsencrypt
+         $PKG/etc/$PRGNAM \
+         $PKG/var/www/$PRGNAM
 
 # Copy script
 install -Dm755 -t "$PKG/usr/sbin/" dehydrated
@@ -64,7 +64,7 @@ cp -ar \
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Create symlink to configuration examples
-pushd $PKG/etc/dehydrated
+pushd $PKG/etc/$PRGNAM
 ln -sf ../../usr/doc/$PRGNAM-$VERSION/examples examples
 popd
 
