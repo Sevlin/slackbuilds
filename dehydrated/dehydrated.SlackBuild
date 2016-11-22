@@ -70,7 +70,16 @@ popd
 
 # Copy the slack-desc into ./install
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
+for INSTFILE in 'doinst.sh'      \
+                'slack-desc'     \
+                'slack-required' \
+                'slack-suggests' \
+                'slack-conflicts'
+do
+    [[ -f $CWD/$INSTFILE ]] \
+        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+done
+
 
 # Make the package
 cd $PKG
