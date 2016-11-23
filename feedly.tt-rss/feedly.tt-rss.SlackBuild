@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Slackware package build script for Feedly theme for  Tiny Tiny RSS
+# Home Page: https://github.com/levito/tt-rss-feedly-theme
+
+# Copyright 2013-2016, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM="feedly.tt-rss"
+SRCNAM="tt-rss-feedly-theme"
+STYLENAME="feedly"
+VERSION="git"
+ARCH="noarch"
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+
+STYLEROOT=${STYLEROOT:-/var/www/tt-rss/themes}
+
+PHPUSER=${PHPUSER:-root}
+PHPGROUP=${PHPGROUP:-apache}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -eu
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf ${SRCNAM}
+git clone https://github.com/levito/tt-rss-feedly-theme
+cd ${SRCNAM}
+VERSION="$(git rev-parse HEAD)"
+VERSION="$(date +%Y%m%d).${VERSION:0:7}.git"
+rm -rf .git* feedly-screenshots/
+chown -R ${PHPUSER}:${PHPGROUP} .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 -o -perm 644 \) \
+ -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+mv  README.md \
+    $PKG/usr/doc/$PRGNAM-$VERSION
+
+mkdir -p $PKG/$STYLEROOT
+cp -a $TMP/$SRCNAM/* $PKG/$STYLEROOT/
+
+mkdir -p $PKG/install
+for METAFILE in 'slack-conflicts' \
+                'slack-desc'      \
+                'slack-required'  \
+                'slack-suggests'; do
+    [[ -f ${CWD}/${METAFILE} ]] \
+        && cat $CWD/$METAFILE > $PKG/install/$METAFILE
+done
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

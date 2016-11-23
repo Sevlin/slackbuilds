@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+feedly.tt-rss: Feedly (Feedly-like style for Tiny Tiny RSS)
+feedly.tt-rss:
+feedly.tt-rss: Feedly theme for Tiny Tiny RSS 1.15 or newer.
+feedly.tt-rss:
+feedly.tt-rss: For the best experience, use a current browser. IE9 and older versions are
+feedly.tt-rss: not supported.
+feedly.tt-rss:
+feedly.tt-rss: Homepage: https://github.com/levito/tt-rss-feedly-theme/
+feedly.tt-rss:
+feedly.tt-rss:
+feedly.tt-rss:
