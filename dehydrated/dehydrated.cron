@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+if [ -x /usr/sbin/%PRGNAM% ]; then
+    /usr/sbin/%PRGNAM% --cron | logger -s -t %PRGNAM%
+fi
+

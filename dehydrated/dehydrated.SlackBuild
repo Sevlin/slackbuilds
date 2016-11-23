@@ -51,10 +51,15 @@ find -L . \
 # Create directories
 mkdir -p $PKG/usr/sbin \
          $PKG/etc/$PRGNAM \
+         $PKG/etc/cron.weekly \
          $PKG/var/www/$PRGNAM
 
 # Copy script
 install -Dm755 -t "$PKG/usr/sbin/" dehydrated
+
+# Install cron task
+sed -e "s|%PRGNAM%|${PRGNAM}|g" $CWD/${PRGNAM}.cron \
+    > $PKG/etc/cron.weekly/$PRGNAM.new
 
 # Copy program documentation into the package
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
@@ -70,8 +75,9 @@ popd
 
 # Copy the slack-desc into ./install
 mkdir -p $PKG/install
-for INSTFILE in 'doinst.sh'      \
-                'slack-desc'     \
+sed -e "s|%PRGNAM%|${PRGNAM}|g" $CWD/doinst.sh \
+    > $PKG/install/doinst.sh
+for INSTFILE in 'slack-desc'     \
                 'slack-required' \
                 'slack-suggests' \
                 'slack-conflicts'
