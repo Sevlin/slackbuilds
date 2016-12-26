@@ -61,7 +61,7 @@ cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  AUTHORS COPYING-AGPL \
+  AUTHORS \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Change ownership and perms and create a link.
