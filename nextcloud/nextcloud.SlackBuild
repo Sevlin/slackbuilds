@@ -73,10 +73,6 @@ chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data}
 chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
 chmod 775 $PKG/$DOCROOT/$PRGNAM/apps
 
-# Rename default configuration files
-mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
-   $PKG/$DOCROOT/$PRGNAM/.htaccess.new
-
 # Cron job
 mkdir -p ${PKG}/etc/cron.d
 install -m 0644	${CWD}/nextcloud.cron ${PKG}/etc/cron.d/nextcloud.new
