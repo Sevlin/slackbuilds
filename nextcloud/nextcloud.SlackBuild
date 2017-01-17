@@ -68,10 +68,10 @@ cp -a \
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
 
-mkdir $PKG/$DOCROOT/$PRGNAM/{data,assets}
-chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data,assets}
+mkdir $PKG/$DOCROOT/$PRGNAM/data
+chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data}
 chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
-chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
+chmod 775 $PKG/$DOCROOT/$PRGNAM/apps
 
 # Rename default configuration files
 mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
