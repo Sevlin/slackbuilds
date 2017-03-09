@@ -25,7 +25,7 @@
 
 PRGNAM="phpbb"
 SRCNAM="phpBB3"
-VERSION=${VERSION:-3.1.10}
+VERSION=${VERSION:-3.2.0}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
