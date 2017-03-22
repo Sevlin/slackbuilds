@@ -1,8 +1,15 @@
 PRGNAM="nextcloud"
+<<<<<<< HEAD
 VERSION="11.0.2"
 HOMEPAGE="http://nextcloud.com"
 DOWNLOAD="https://download.nextcloud.com/server/releases/nextcloud-11.0.2.tar.bz2"
 MD5SUM="f9e7f629c212c0a7d8deb421d36973b3"
+=======
+VERSION="11.0.1"
+HOMEPAGE="http://nextcloud.com"
+DOWNLOAD="https://download.nextcloud.com/server/releases/nextcloud-11.0.1.tar.bz2"
+MD5SUM="7c5f147039a0e9240926fe1f4d134e81"
+>>>>>>> fca6f72c0372c39c3ccc646f1b6f6de992addd17
 DOWNLOAD_x86_64=""
 MD5SUM_x86_64=""
 REQUIRES=""

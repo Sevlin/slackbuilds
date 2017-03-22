@@ -21,6 +21,5 @@ preserve_perms() {
   config $NEW
 }
 
-config %DOCROOT%/nextcloud/.htaccess.new
 preserve_perms etc/cron.d/nextcloud.new
 

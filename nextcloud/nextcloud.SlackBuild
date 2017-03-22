@@ -24,7 +24,11 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="nextcloud"
+<<<<<<< HEAD
 VERSION=${VERSION:-11.0.2}
+=======
+VERSION=${VERSION:-11.0.1}
+>>>>>>> fca6f72c0372c39c3ccc646f1b6f6de992addd17
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -68,14 +72,10 @@ cp -a \
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
 
-mkdir $PKG/$DOCROOT/$PRGNAM/{data,assets}
-chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data,assets}
+mkdir $PKG/$DOCROOT/$PRGNAM/data
+chown -R $PHPGROUP:$PHPGROUP $PKG/$DOCROOT/$PRGNAM/{apps,config,data}
 chmod 770 $PKG/$DOCROOT/$PRGNAM/{data,config}
-chmod 775 $PKG/$DOCROOT/$PRGNAM/{apps,assets}
-
-# Rename default configuration files
-mv $PKG/$DOCROOT/$PRGNAM/.htaccess \
-   $PKG/$DOCROOT/$PRGNAM/.htaccess.new
+chmod 775 $PKG/$DOCROOT/$PRGNAM/apps
 
 # Cron job
 mkdir -p ${PKG}/etc/cron.d
