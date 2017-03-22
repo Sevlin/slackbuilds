@@ -6,13 +6,15 @@ DOWNLOAD="http://nginx.org/download/nginx-1.10.3.tar.gz \
           https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz \
           https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.6.tar.gz \
           https://github.com/pagespeed/ngx_pagespeed/archive/v1.10.33.0-beta.tar.gz \
-          https://dl.google.com/dl/page-speed/psol/1.10.33.0.tar.gz"
+          https://dl.google.com/dl/page-speed/psol/1.10.33.0.tar.gz \
+          https://github.com/arut/nginx-rtmp-module/archive/v1.1.11.tar.gz"
 MD5SUM="204a20cb4f0b0c9db746c630d89ff4ea \
         ecf42d21f26338443d711.10.3851628c \
         d91d7c0f9ce2c48e4786efa467176a4c \
         76ac525432d459a4615a3a8638195ba9 \
         dae5ac40535f4ff2fdb879c83f22e0b0 \
-        1217ea50c3858fab2862bed7ad54a3a8"
+        1217ea50c3858fab2862bed7ad54a3a8 \
+        a87ab77c4414f80d394d712cceb39016"
 DOWNLOAD_x86_64=""
 MD5SUM_x86_64=""
 REQUIRES=""
