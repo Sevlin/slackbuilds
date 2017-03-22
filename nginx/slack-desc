@@ -5,15 +5,15 @@
 # You must make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':' except on otherwise blank lines.
 
-     |-----handy-ruler------------------------------------------------------|
-nginx: nginx (http/imap/pop3 proxy)
-nginx:
-nginx: Nginx [engine x] is a high-performance HTTP server and reverse proxy,
-nginx: as well as an IMAP/POP3 proxy server.
-nginx:
-nginx: Nginx was written by Igor Sysoev.
-nginx:
-nginx: Homepage: http://nginx.net/
-nginx:
-nginx:
-nginx:
+                          |-----handy-ruler------------------------------------------------------|
+nginx%NGINX_CUSTOM_PREFIX%: nginx (http/imap/pop3 proxy)
+nginx%NGINX_CUSTOM_PREFIX%:
+nginx%NGINX_CUSTOM_PREFIX%: Nginx [engine x] is a high-performance HTTP server and reverse proxy,
+nginx%NGINX_CUSTOM_PREFIX%: as well as an IMAP/POP3 proxy server.
+nginx%NGINX_CUSTOM_PREFIX%:
+nginx%NGINX_CUSTOM_PREFIX%: Nginx was written by Igor Sysoev.
+nginx%NGINX_CUSTOM_PREFIX%:
+nginx%NGINX_CUSTOM_PREFIX%: Homepage: http://nginx.net/
+nginx%NGINX_CUSTOM_PREFIX%:
+nginx%NGINX_CUSTOM_PREFIX%:
+nginx%NGINX_CUSTOM_PREFIX%:

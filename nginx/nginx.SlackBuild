@@ -32,6 +32,7 @@ PRGNAM=nginx
 VERSION=${VERSION:-1.10.3}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
+NGINX_CUSTOM_PREFIX=${NGINX_CUSTOM_PREFIX:-}
 # Third-party modules
 MODSECNAM=modsecurity
 MODSECVERSION=${MODSECVERSION:-2.9.1}
@@ -301,7 +302,6 @@ cat $CWD/nginx.SlackBuild > $PKG/usr/doc/nginx-$VERSION/nginx.SlackBuild
 # Installation scripts
 mkdir -p $PKG/install
 for INSTFILE in 'doinst.sh'      \
-		'slack-desc'     \
                 'slack-required' \
                 'slack-suggests' \
                 'slack-conflicts'
@@ -309,6 +309,10 @@ do
     [[ -f $CWD/$INSTFILE ]] \
         && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
 done
+
+# Custom package prefix
+sed "s|%NGINX_CUSTOM_PREFIX%|-${NGINX_CUSTOM_PREFIX}|g" $CWD/slack-desc \
+    > $PKG/install/slack-desc
 
 # Add GeoIP deps
 if [ "${NGINX_ENABLE_GEOIP}" == yes ]; then
@@ -331,5 +335,9 @@ fi
 # Add \n to deps file
 echo >> $PKG/install/slack-required
 
+# Add dash
+[[ ! -z "${NGINX_CUSTOM_PREFIX}" ]] \
+    && NGINX_CUSTOM_PREFIX="-${NGINX_CUSTOM_PREFIX}"
+
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM$NGINX_CUSTOM_PREFIX-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
