@@ -316,7 +316,7 @@ if [ "${NGINX_ENABLE_GEOIP}" == yes ]; then
 	cat $CWD/slack-required-geoip >> $PKG/install/slack-required
 fi
 
-# Add GeoIP deps
+# Add ModSecurity deps
 if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
 	echo -n ',' >> $PKG/install/slack-required
 	cat $CWD/slack-required-modsec >> $PKG/install/slack-required
