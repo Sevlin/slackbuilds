@@ -41,7 +41,8 @@ FANCYINDEXNAM=ngx-fancyindex
 FANCYINDEXVERSION=${FANCYINDEXVERSION:-0.3.6}
 PAGESPEEDNAM=ngx_pagespeed
 PAGESPEEDVERSION=${PAGESPEEDVERSION:-1.10.33.0}
-
+RTMPNAM=nginx-rtmp-module
+RTMPVERSION=${RTMPVERSION:-1.1.11}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -62,6 +63,7 @@ NGINX_ENABLE_MODSEC=${NGINX_ENABLE_MODSEC:-'no'}
 NGINX_ENABLE_HEADERSMORE=${NGINX_ENABLE_HEADERSMORE:-'no'}
 NGINX_ENABLE_FANCYINDEX=${NGINX_ENABLE_FANCYINDEX:-'no'}
 NGINX_ENABLE_PAGESPEED=${NGINX_ENABLE_PAGESPEED:-'no'}
+NGINX_ENABLE_RTMP=${NGINX_ENABLE_RTMP:-'no'}
 EXTRA_MODS=''
 
 if [ "$ARCH" = "i486" ]; then
@@ -173,6 +175,21 @@ if [ "${NGINX_ENABLE_PAGESPEED}" == "yes" ]; then
 	popd
 fi
 
+# RTMP
+if [ "${NGINX_ENABLE_RTMP}" == "yes" ]; then
+	tar xvf $CWD/v$RTMPVERSION-*.tar.?z*
+	pushd $RTMPNAM-$RTMPVERSION-beta
+	tar xvf $CWD/$RTMPVERSION.tar.?z*
+	chown -R root:root .
+	find -L . \
+	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+	 -exec chmod 755 {} \; -o \
+	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+	 -exec chmod 644 {} \;
+
+	EXTRA_MODS="${EXTRA_MODS} --add-module=./${RTMPNAM}-${RTMPVERSION}"
+	popd
+fi
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
