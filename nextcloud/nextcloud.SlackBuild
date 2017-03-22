@@ -24,11 +24,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="nextcloud"
-<<<<<<< HEAD
 VERSION=${VERSION:-11.0.2}
-=======
-VERSION=${VERSION:-11.0.1}
->>>>>>> fca6f72c0372c39c3ccc646f1b6f6de992addd17
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -82,7 +78,7 @@ mkdir -p ${PKG}/etc/cron.d
 install -m 0644	${CWD}/nextcloud.cron ${PKG}/etc/cron.d/nextcloud.new
 
 # Remove git-related junk
-#find $PKG/$DOCROOT/$PRGNAM -type f -name '.git*' -delete
+find $PKG/$DOCROOT/$PRGNAM -type f -name '.git*' -delete
 
 mkdir -p $PKG/install
 for METAFILE in 'doinst.sh' \
@@ -103,3 +99,4 @@ sed -i \
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
