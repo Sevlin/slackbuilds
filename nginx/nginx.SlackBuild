@@ -322,6 +322,12 @@ if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
 	cat $CWD/slack-required-modsec >> $PKG/install/slack-required
 fi
 
+# Add RTMP deps
+if [ "${NGINX_ENABLE_RTMP}" == yes ]; then
+	echo -n ',' >> $PKG/install/slack-required
+	cat $CWD/slack-required-rtmp >> $PKG/install/slack-required
+fi
+
 # Add \n to deps file
 echo >> $PKG/install/slack-required
 
