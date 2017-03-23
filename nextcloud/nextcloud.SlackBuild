@@ -77,9 +77,6 @@ chmod 775 $PKG/$DOCROOT/$PRGNAM/apps
 mkdir -p ${PKG}/etc/cron.d
 install -m 0644	${CWD}/nextcloud.cron ${PKG}/etc/cron.d/nextcloud.new
 
-# Remove git-related junk
-find $PKG/$DOCROOT/$PRGNAM -type f -name '.git*' -delete
-
 mkdir -p $PKG/install
 for METAFILE in 'doinst.sh' \
                 'slack-conflicts' \
