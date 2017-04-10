@@ -1,12 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 # Slackware build script for nginx
 
 # Copyright 2008 Cherife Li <cherife-#-dotimes.com>
 # Copyright 2011 Diogo Leal <diogo@diogoleal.com>
 # Copyright 2012-13 Francisco Ambrozio <sbo@franciscoambrozio.com>
-# Copyright 2014 Larry Hajali <larryhaja[at]gmail[dot]com>
-# Copyright 2015-2016 Mykyta Solomko <sev@nix.org.ua>
+# Copyright 2014-2017 Larry Hajali <larryhaja[at]gmail[dot]com>
+# All rights reserved.
+#
+# Modified By Mykyta Solomko
+# Copyright 2015-2017 Mykyta Solomko <sev@nix.org.ua>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -32,22 +35,12 @@ PRGNAM=nginx
 VERSION=${VERSION:-1.10.3}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
-NGINX_CUSTOM_PREFIX=${NGINX_CUSTOM_PREFIX:-}
-# Third-party modules
-MODSECNAM=modsecurity
-MODSECVERSION=${MODSECVERSION:-2.9.1}
-HDRSMORENAM=headers-more
-HDRSMOREVERSION=${HDRSMOREVERSION:-0.29}
-FANCYINDEXNAM=ngx-fancyindex
-FANCYINDEXVERSION=${FANCYINDEXVERSION:-0.3.6}
-PAGESPEEDNAM=ngx_pagespeed
-PAGESPEEDVERSION=${PAGESPEEDVERSION:-1.10.33.0}
-RTMPNAM=nginx-rtmp-module
-RTMPVERSION=${RTMPVERSION:-1.1.11}
+NUMJOBS=${NUMJOBS:-2}
+NGINX_PKG_SUFFIX=${NGINX_PKG_SUFFIX:-}
 
-if [ -z "$ARCH" ]; then
+if [ -z "${ARCH}" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i486 ;;
+    i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
        *) ARCH=$( uname -m ) ;;
   esac
@@ -55,25 +48,16 @@ fi
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
-PKG=$TMP/package-$PRGNAM
+PKG=$TMP/package-${PRGNAM}
 OUTPUT=${OUTPUT:-/tmp}
-NUMJOBS=${NUMJOBS:-2}
 
-NGINX_ENABLE_GEOIP=${NGINX_ENABLE_GEOIP:-'no'}
-NGINX_ENABLE_MODSEC=${NGINX_ENABLE_MODSEC:-'no'}
-NGINX_ENABLE_HEADERSMORE=${NGINX_ENABLE_HEADERSMORE:-'no'}
-NGINX_ENABLE_FANCYINDEX=${NGINX_ENABLE_FANCYINDEX:-'no'}
-NGINX_ENABLE_PAGESPEED=${NGINX_ENABLE_PAGESPEED:-'no'}
-NGINX_ENABLE_RTMP=${NGINX_ENABLE_RTMP:-'no'}
-EXTRA_MODS=''
-
-if [ "$ARCH" = "i486" ]; then
-   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+if [ "${ARCH}" = "i586" ]; then
+   SLKCFLAGS="-O2 -march=i586 -mtune=i686"
    LIBDIRSUFFIX=""
-elif [ "$ARCH" = "i686" ]; then
+elif [ "${ARCH}" = "i686" ]; then
    SLKCFLAGS="-O2 -march=i686 -mtune=i686"
    LIBDIRSUFFIX=""
-elif [ "$ARCH" = "x86_64" ]; then
+elif [ "${ARCH}" = "x86_64" ]; then
    SLKCFLAGS="-O2 -fPIC"
    LIBDIRSUFFIX="64"
 else
@@ -83,124 +67,84 @@ fi
 
 set -e
 
-rm -rf $PKG
-mkdir -p $TMP $PKG $OUTPUT
-cd $TMP
-rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
-cd $PRGNAM-$VERSION
+rm -rf "${PKG}"
+mkdir -p "${TMP}" "${PKG}" "${OUTPUT}"
+cd "${TMP}"
+rm -rf "${PRGNAM}-${VERSION}"
+tar xvf "${CWD}/${PRGNAM}-${VERSION}.tar.?z*"
+cd "${PRGNAM}-${VERSION}"
 chown -R root:root .
 find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
-
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 # Fix the nginx.conf file for html and virtual server directory.
 sed -i \
-  -e '/root[ ]*html/s|html;|/var/www/&|' \
-  -e '$s|.*|    include /etc/nginx/conf.d/\*.conf;\n&|' conf/$PRGNAM.conf
+    -e '/root[ ]*html/s|html;|/var/www/&|' \
+    -e '$s|.*|    include /etc/nginx/conf.d/\*.conf;\n&|' "conf/${PRGNAM}.conf"
 
-# GeoIP module
-if [ "${NGINX_ENABLE_GEOIP}" == "yes" ]; then
-  EXTRA_MODS="${EXTRA_MODS} --with-http_geoip_module=dynamic"
+# Add if dynamic modules are used.
+if [ "${NGINX_DYNAMIC:-no}" == "yes" ]; then
+  DYNAMIC_MODULE="${DYNAMIC_MODULE:-=dynamic}"
+  sed -i 's|^events.*|include /etc/nginx/modules/\*.conf;\n\n&|' "conf/${PRGNAM}.conf"
+else
+  DYNAMIC_MODULE=""
 fi
 
-# mod_security WAF
-if [ "${NGINX_ENABLE_MODSEC}" == "yes" ]; then
-	tar xvf $CWD/$MODSECNAM-$MODSECVERSION.tar.?z*
-	pushd $MODSECNAM-$MODSECVERSION
-	chown -R root:root .
-	find -L . \
-	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	 -exec chmod 755 {} \; -o \
-	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	 -exec chmod 644 {} \;
+NGINX_ADDMODULE=${NGINX_ADDMODULE:-}
+NGINX_DEPS="pcre,xz,zlib,libgcrypt,libgpg-error,libxml2,libxslt,openssl-solibs|openssl,perl"
 
-	CFLAGS="$SLKCFLAGS" \
-	CXXFLAGS="$SLKCFLAGS" \
-	./configure \
-	  --enable-standalone-module \
-	  --disable-mlogc
-	make -j ${NUMJOBS}
-
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${MODSECNAM}-${MODSECVERSION}/nginx/modsecurity"
-	popd
+# Enable GeoIP support.
+if [ "${NGINX_ENABLE_GEOIP:-no}" == "yes" ]; then
+  GEOIP_MOD="--with-http_geoip_module${DYNAMIC_MODULE}"
+  NGINX_DEPS="${NGINX_DEPS},GeoIP|geoip"
+else
+  GEOIP_MOD=""
 fi
 
-# headers-more
-if [ "${NGINX_ENABLE_HEADERSMORE}" == "yes" ]; then
-	tar xvf $CWD/v$HDRSMOREVERSION.tar.?z*
-	mv $HDRSMORENAM-nginx-module-$HDRSMOREVERSION $HDRSMORENAM-$HDRSMOREVERSION
-	pushd $HDRSMORENAM-$HDRSMOREVERSION
-	chown -R root:root .
-	find -L . \
-	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	 -exec chmod 755 {} \; -o \
-	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	 -exec chmod 644 {} \;
-
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${HDRSMORENAM}-${HDRSMOREVERSION}"
-	popd
+# Enable FancyIndex
+if [ "${NGINX_ENABLE_FANCYINDEX:-no}" == "yes" ]; then
+    :
 fi
 
-# fancyindex
-if [ "${NGINX_ENABLE_FANCYINDEX}" == "yes" ]; then
-	tar xvf $CWD/v$FANCYINDEXVERSION.tar.?z*
-	pushd $FANCYINDEXNAM-$FANCYINDEXVERSION
-	chown -R root:root .
-	find -L . \
-	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	 -exec chmod 755 {} \; -o \
-	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	 -exec chmod 644 {} \;
-
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${FANCYINDEXNAM}-${FANCYINDEXVERSION}"
-	popd
+# Enable ModSecurity
+if [ "${NGINX_ENABLE_MODSECURITY:-no}" == "yes" ]; then
+    NGINX_DEPS="${NGINX_DEPS},db44,expat,ncurses,openldap-client,readline,apr,apr-util,cyrus-sasl,lua,sqlite,util-linux"
 fi
 
-# pagespeed
-if [ "${NGINX_ENABLE_PAGESPEED}" == "yes" ]; then
-	tar xvf $CWD/v$PAGESPEEDVERSION-*.tar.?z*
-	pushd $PAGESPEEDNAM-$PAGESPEEDVERSION-beta
-	tar xvf $CWD/$PAGESPEEDVERSION.tar.?z*
-	chown -R root:root .
-	find -L . \
-	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	 -exec chmod 755 {} \; -o \
-	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	 -exec chmod 644 {} \;
-
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${PAGESPEEDNAM}-${PAGESPEEDVERSION}-beta"
-	popd
+# Enable RTMP
+if [ "${NGINX_ENABLE_RTMP:-no}" == "yes" ]; then
+    :
 fi
 
-# RTMP
-if [ "${NGINX_ENABLE_RTMP}" == "yes" ]; then
-	tar xvf $CWD/v$RTMPVERSION*.tar.?z*
-	pushd $RTMPNAM-$RTMPVERSION
-	chown -R root:root .
-	find -L . \
-	 \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-	 -exec chmod 755 {} \; -o \
-	 \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-	 -exec chmod 644 {} \;
+# Add extra modules not included in nginx.
+if [ ! -z "${NGINX_ADDMODULE}" ]; then
 
-	EXTRA_MODS="${EXTRA_MODS} --add-module=./${RTMPNAM}-${RTMPVERSION}"
-	popd
+    if [ "${NGINX_DYNAMIC}" == "yes" ]; then
+        ADD_MODULE="--modules-path=/usr/lib${LIBDIRSUFFIX}/${PRGNAM}/modules"
+    fi
+
+    for NGX_MODULE in ${NGINX_ADDMODULE[*]}; do
+        if [ "${NGINX_DYNAMIC}" == "yes" ]; then
+            ADD_MODULE="${ADD_MODULE} --add-dynamic-module=${NGX_MODULE}"
+        else
+            ADD_MODULE="${ADD_MODULE} --add-module=${NGX_MODULE}"
+        fi
+    done
 fi
 
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
+CFLAGS="${SLKCFLAGS}" \
+CXXFLAGS="${SLKCFLAGS}" \
 ./configure \
   --prefix=/usr \
   --sbin-path=/usr/sbin/nginx \
   --conf-path=/etc/nginx/nginx.conf \
   --pid-path=/var/run/nginx.pid \
   --lock-path=/var/lock/subsys \
-  --user=${NGINXUSER:=nobody} \
-  --group=${NGINXGROUP:=nogroup} \
+  --user="${NGINXUSER:=nobody}" \
+  --group="${NGINXGROUP:=nogroup}" \
   --error-log-path=/var/log/nginx/error.log \
   --http-log-path=/var/log/nginx/access.log \
   --http-client-body-temp-path=/var/lib/nginx/client_body \
@@ -213,10 +157,11 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-select_module \
   --with-poll_module \
   --with-http_ssl_module \
+  --with-http_v2_module \
   --with-http_realip_module \
   --with-http_addition_module \
-  --with-http_xslt_module=dynamic \
-  --with-http_image_filter_module=dynamic \
+  --with-http_xslt_module${DYNAMIC_MODULE} \
+  --with-http_image_filter_module${DYNAMIC_MODULE} \
   --with-http_sub_module \
   --with-http_dav_module \
   --with-http_flv_module \
@@ -226,118 +171,116 @@ CXXFLAGS="$SLKCFLAGS" \
   --with-http_random_index_module \
   --with-http_secure_link_module \
   --with-http_degradation_module \
+  --with-http_slice_module \
   --with-http_stub_status_module \
-  --with-http_perl_module=dynamic \
+  --with-http_perl_module${DYNAMIC_MODULE} \
   --with-http_auth_request_module \
-  --with-mail=dynamic \
+  --with-mail${DYNAMIC_MODULE} \
   --with-mail_ssl_module \
-  --with-http_v2_module \
-  --with-threads \
-  $EXTRA_MODS
+  --with-stream${DYNAMIC_MODULE} \
+  --with-stream_ssl_module \
+  --with-pcre \
+  --with-pcre-jit \
+  --with-libatomic \
+  ${GEOIP_MOD} \
+  ${ADD_MODULE[*]}
 
 make -j ${NUMJOBS}
 make install \
-  DESTDIR=$PKG \
+  DESTDIR="${PKG}" \
   INSTALLDIRS=vendor \
   INSTALLVENDORMAN3DIR=/usr/man/man3
 
-# Strip binaries
-find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | \
-  grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+find "${PKG}" -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+mkdir -p "${PKG}/usr/man/man8"
+install -m 0644 "objs/${PRGNAM}.8" "${PKG}/usr/man/man8"
+find "${PKG}/usr/man" -type f -exec gzip -9 {} \;
 
-mkdir -p $PKG/usr/man/man8
-install -m 0644 objs/$PRGNAM.8 $PKG/usr/man/man8
-find $PKG/usr/man -type f -exec gzip -9 {} \;
+find ${PKG} -name perllocal.pod \
+  -o -name ".packlist" \
+  -o -name "*.bs" \
+  | xargs rm -f
 
-find $PKG -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
-find $PKG -perm 444 -exec chmod 0644 {} \;
-find $PKG -perm 555 -exec chmod 0755 {} \;
+find "${PKG}" -perm 444 -exec chmod 0644 {} \;
+find "${PKG}" -perm 555 -exec chmod 0755 {} \;
 
 # Make the temp path.
-mkdir -p $PKG/var/lib
-install -d -o $NGINXUSER -g $NGINXGROUP \
-        -m 0700	$PKG/var/lib/$PRGNAM
+mkdir -p "${PKG}/var/lib/${PRGNAM}"
+chmod 0700 "${PKG}/var/lib/${PRGNAM}"
+chown "${NGINXUSER}" "${PKG}/var/lib/${PRGNAM}"
 
 # Move html directory
-mkdir -p $PKG/var/www
-mv $PKG/usr/html $PKG/var/www
+mkdir -p "${PKG}/var/www"
+mv "${PKG}/usr/html" "${PKG}/var/www"
 
 # Add an init script
-mkdir -p $PKG/etc/rc.d
-cat $CWD/rc.nginx > $PKG/etc/rc.d/rc.nginx.new
+mkdir -p "${PKG}/etc/rc.d"
+cat "${CWD}/rc.nginx" > "${PKG}/etc/rc.d/rc.nginx.new"
 
-mkdir -p $PKG/etc/logrotate.d
-sed -e "s,@USER@,$NGINXUSER," -e "s,@GROUP@,$NGINXGROUP," $CWD/nginx.logrotate \
-  > $PKG/etc/logrotate.d/nginx.new
-
-# Don't clobber config files
-for i in $(find $PKG/etc/$PRGNAM -type f ! -name "*\.default"); do
-  mv "$i" "$i".new
-done
-
-# Copy default modsecurity config
-if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
-	cat $MODSECNAM-$MODSECVERSION/modsecurity.conf-recommended \
-	  > $PKG/etc/$PRGNAM/modsecurity.conf.new
-fi
-
-# modsecurity's unicode mapping
-if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
-	cat $MODSECNAM-$MODSECVERSION/unicode.mapping \
-	  > $PKG/etc/$PRGNAM/unicode.mapping.new
-fi
+mkdir -p ${PKG}/etc/logrotate.d
+sed -e "s,@USER@,${NGINXUSER}," \
+    -e "s,@GROUP@,${NGINXGROUP}," \
+    "${CWD}/nginx.logrotate" \
+  > "${PKG}/etc/logrotate.d/nginx.new"
 
 # Set the permissions for the log directory.
-chown $NGINXUSER $PKG/var/log/$PRGNAM
-chmod 750 $PKG/var/log/$PRGNAM
+chown "${NGINXUSER}" "${PKG}/var/log/${PRGNAM}"
+chmod 750 "${PKG}/var/log/${PRGNAM}"
 
 # Create sub-directory for virtual servers.
-mkdir $PKG/etc/$PRGNAM/conf.d
+mkdir "${PKG}/etc/${PRGNAM}/conf.d"
 
-mkdir -p $PKG/usr/doc/nginx-$VERSION
-cp -a CHANGES* LICENSE README $PKG/usr/doc/nginx-$VERSION
-cat $CWD/nginx.SlackBuild > $PKG/usr/doc/nginx-$VERSION/nginx.SlackBuild
+mkdir -p "${PKG}/usr/doc/nginx-${VERSION}"
+cp -a CHANGES* LICENSE README "${PKG}/usr/doc/nginx-${VERSION}"
+cat "${CWD}/nginx.SlackBuild" > "${PKG}/usr/doc/nginx-${VERSION}/nginx.SlackBuild"
 
-# Installation scripts
-mkdir -p $PKG/install
-for INSTFILE in 'doinst.sh'      \
-                'slack-required' \
-                'slack-suggests' \
-                'slack-conflicts'
-do
-    [[ -f $CWD/$INSTFILE ]] \
-        && cat $CWD/$INSTFILE > $PKG/install/$INSTFILE
+mkdir -p "${PKG}/install"
+cat "${CWD}/doinst.sh" > "${PKG}/install/doinst.sh"
+
+# Add slack-desc
+cat > "${PKG}/slack-desc" << EOF
+                        |-----handy-ruler------------------------------------------------------|
+nginx${NGINX_PKG_SUFFIX}: nginx (http/imap/pop3 proxy)
+nginx${NGINX_PKG_SUFFIX}:
+nginx${NGINX_PKG_SUFFIX}: Nginx [engine x] is a high-performance HTTP server and reverse proxy,
+nginx${NGINX_PKG_SUFFIX}: as well as an IMAP/POP3 proxy server.
+nginx${NGINX_PKG_SUFFIX}:
+nginx${NGINX_PKG_SUFFIX}: Nginx was written by Igor Sysoev.
+nginx${NGINX_PKG_SUFFIX}:
+nginx${NGINX_PKG_SUFFIX}: Homepage: http://nginx.net/
+nginx${NGINX_PKG_SUFFIX}:
+nginx${NGINX_PKG_SUFFIX}:
+nginx${NGINX_PKG_SUFFIX}:
+EOF
+
+# Add dependencies
+echo "${NGINX_DEPS}" > "${PKG}/slack-required"
+
+# Create modules directory and config files.
+# Unfortunately, we have to use full paths rather then relative paths
+# for nginx dynamic modules, or else we get the following error:
+# $ sudo /usr/sbin/nginx -t
+# nginx: [emerg] dlopen() "/usr/modules/ngx_stream_module.so" failed (/usr/modules/ngx_stream_module.so: cannot open shared object file: No such file or directory) in /etc/nginx/modules/mod-stream.conf:1
+# nginx: configuration file /etc/nginx/nginx.conf test failed
+# Source: https://trac.nginx.org/nginx/ticket/961
+if [ "${NGINX_DYNAMIC}" == "yes" ]; then
+  mkdir -p "${PKG}/etc/${PRGNAM}/modules"
+  for module in ${PKG}/usr/lib${LIBDIRSUFFIX}/${PRGNAM}/modules/*; do
+    MODULE_NAME=$(basename ${module} | sed 's|\.so||' | tr _ -)
+    MODULE_DIR=$(dirname ${module} | sed "s|${PKG}||")
+    echo "load_module \"${MODULE_DIR}/$(basename ${module})\";" > \
+      "${PKG}/etc/${PRGNAM}/modules/${MODULE_NAME}.conf"
+    echo "config etc/${PRGNAM}/modules/${MODULE_NAME}.conf.new" >> "${PKG}/install/doinst.sh"
+  done
+fi
+
+# Don't clobber config files
+for i in $(find "${PKG}/etc/${PRGNAM}" -type f ! -name "*\.default"); do
+  mv "${i}" "${i}".new
 done
 
-# Custom package prefix
-sed "s|%NGINX_CUSTOM_PREFIX%|-${NGINX_CUSTOM_PREFIX}|g" $CWD/slack-desc \
-    > $PKG/install/slack-desc
+cd ${PKG}
+/sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}${NGINX_PKG_SUFFIX}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
 
-# Add GeoIP deps
-if [ "${NGINX_ENABLE_GEOIP}" == yes ]; then
-	echo -n ',' >> $PKG/install/slack-required
-	cat $CWD/slack-required-geoip >> $PKG/install/slack-required
-fi
-
-# Add ModSecurity deps
-if [ "${NGINX_ENABLE_MODSEC}" == yes ]; then
-	echo -n ',' >> $PKG/install/slack-required
-	cat $CWD/slack-required-modsec >> $PKG/install/slack-required
-fi
-
-# Add RTMP deps
-if [ "${NGINX_ENABLE_RTMP}" == yes ]; then
-	echo -n ',' >> $PKG/install/slack-required
-	cat $CWD/slack-required-rtmp >> $PKG/install/slack-required
-fi
-
-# Add \n to deps file
-echo >> $PKG/install/slack-required
-
-# Add dash
-[[ ! -z "${NGINX_CUSTOM_PREFIX}" ]] \
-    && NGINX_CUSTOM_PREFIX="-${NGINX_CUSTOM_PREFIX}"
-
-cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM$NGINX_CUSTOM_PREFIX-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
