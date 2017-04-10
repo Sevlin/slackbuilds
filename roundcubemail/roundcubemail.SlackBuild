@@ -24,7 +24,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="roundcubemail"
-VERSION=${VERSION:-1.0.9}
+VERSION=${VERSION:-1.2.4}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -45,7 +45,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+tar xvf $CWD/$PRGNAM-$VERSION-complete.tar.?z*
 cd $PRGNAM-$VERSION
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
@@ -56,11 +56,19 @@ find . \
 
 find . -type f -name '.git*' -delete
 
-mkdir -p $PKG/$DOCROOT
+mkdir -p $PKG/$DOCROOT \
+         $PKG/var/{log,tmp}/$PRGNAM
+
+sed -i \
+    -e "s|RCUBE_INSTALL_PATH . 'temp.*|'/var/tmp/roundcubemail';|" \
+    -e "s|RCUBE_INSTALL_PATH . 'logs.*|'/var/log/roundcubemail';|" \
+    $TMP/$PRGNAM-$VERSION/config/defaults.inc.php \
+    $TMP/$PRGNAM-$VERSION/program/lib/Roundcube/rcube_config.php
+
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/temp \
-           $PKG/$DOCROOT/$PRGNAM/logs
+chown $PHPUSER:$PHPGROUP $PKG/var/{log,tmp}/$PRGNAM
+chmod 0755 $PKG/var/{log,tmp}/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
@@ -79,3 +87,4 @@ done
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
