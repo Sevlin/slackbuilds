@@ -1,22 +1,16 @@
 PRGNAM="nginx"
 VERSION="1.10.3"
 HOMEPAGE="http://nginx.org/"
-DOWNLOAD="http://nginx.org/download/nginx-1.10.3.tar.gz \
-	  https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz \
-          https://github.com/openresty/headers-more-nginx-module/archive/v0.29.tar.gz \
-          https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.6.tar.gz \
-          https://github.com/pagespeed/ngx_pagespeed/archive/v1.10.33.0-beta.tar.gz \
-          https://dl.google.com/dl/page-speed/psol/1.10.33.0.tar.gz \
-          https://github.com/arut/nginx-rtmp-module/archive/v1.1.11.tar.gz"
-MD5SUM="204a20cb4f0b0c9db746c630d89ff4ea \
-        ecf42d21f26338443d711.10.3851628c \
-        d91d7c0f9ce2c48e4786efa467176a4c \
-        76ac525432d459a4615a3a8638195ba9 \
-        dae5ac40535f4ff2fdb879c83f22e0b0 \
-        1217ea50c3858fab2862bed7ad54a3a8 \
-        a87ab77c4414f80d394d712cceb39016"
-DOWNLOAD_x86_64=""
-MD5SUM_x86_64=""
+DOWNLOAD['nginx']='http://nginx.org/download/nginx-1.10.3.tar.gz'
+DOWNLOAD['modsecurity']=https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz'
+DOWNLOAD['fancyindex']='https://github.com/aperezdc/ngx-fancyindex/archive/v0.3.6.tar.gz'
+DOWNLOAD['rtmp']='https://github.com/arut/nginx-rtmp-module/archive/v1.1.11.tar.gz'
+MD5SUM['nginx']='204a20cb4f0b0c9db746c630d89ff4ea'
+MD5SUM['modsecurity']='ecf42d21f26338443d711.10.3851628c'
+MD5SUM['fancyindex']='76ac525432d459a4615a3a8638195ba9'
+MD5SUM['rtmp']='a87ab77c4414f80d394d712cceb39016'
+OUTPUTNAM['fancyindex']='ngx-fancyindex-0.3.6.tar.gz'
+OUTPUTNAM['rtmp']='nginx-rtmp-module-1.1.11.tar.gz'
 REQUIRES=""
 MAINTAINER="Mykyta Solomko"
 EMAIL="sev@nix.org.ua"
