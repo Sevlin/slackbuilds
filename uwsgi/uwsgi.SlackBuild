@@ -1,0 +1,199 @@
+#!/bin/bash
+
+# Slackware build script for uwsgi
+
+# Copyright 2012-2014 Audrius Kažukauskas <audrius@neutrino.lt>
+# Copyright 2016-2017 Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM="uwsgi"
+VERSION=${VERSION:-"2.0.15"}
+BUILD=${BUILD:-1}
+TAG=${TAG:-"sev"}
+
+if [ -z "${ARCH}" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm  ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD="$(pwd)"
+TMP=${TMP:-"/tmp/build/${ARCH}"}
+PKG="${TMP}/package-${PRGNAM}"
+OUTPUT=${OUTPUT:-"/tmp"}
+
+if [ "${ARCH}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "${ARCH}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "${ARCH}" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Build Python 2.x plugin.
+UWSGI_ENABLE_PYTHON=${UWSGI_ENABLE_PYTHON:-"yes"}
+
+# Set this to "yes" if you want to build a plugin for Python 3.x.  Requires
+# python3 to be installed.
+UWSGI_ENABLE_PYTHON3=${UWSGI_ENABLE_PYTHON3:-"no"}
+
+# Perl UWSGI_ENABLE_PSGI plugin.
+UWSGI_ENABLE_PSGI=${UWSGI_ENABLE_PSGI:-"yes"}
+
+# Build Ruby Rack plugin.
+UWSGI_ENABLE_RACK=${UWSGI_ENABLE_RACK:-"yes"}
+
+# Build PHP plugin.
+UWSGI_ENABLE_PHP=${UWSGI_ENABLE_PHP:-"no"}
+
+# Build V8 plugin.
+UWSGI_ENABLE_V8=${UWSGI_ENABLE_V8:-"no"}
+
+set -eu
+
+rm -rf "${PKG}"
+mkdir -p "${TMP}" "${PKG}" "${OUTPUT}"
+cd "${TMP}"
+rm -rf "${PRGNAM}-${VERSION}"
+tar xvf "${CWD}/${VERSION}.tar".?z*
+cd "${PRGNAM}-${VERSION}"
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# Create build config file.
+cat > "buildconf/package.ini" <<EOF
+[uwsgi]
+inherit = base
+plugin_dir = /usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}
+embedded_plugins = null
+EOF
+
+# Build uWSGI core.
+CFLAGS="${SLKCFLAGS}" \
+python uwsgiconfig.py --build package
+install -D -m 0755 uwsgi "${PKG}/usr/bin/uwsgi"
+
+# Create directories
+mkdir -p "${PKG}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}" \
+         "${PKG}/etc/rc.d" \
+         "${PKG}/etc/uwsgi/vassals" \
+         "${PKG}/var/run/uwsgi" \
+         "${PKG}/etc/logrotate.d" \
+         "${PKG}/var/log/uwsgi"
+
+# Change the path, so that plugins would be placed inside ${PKG}.
+sed -i "s|= /usr|= ${PKG}/usr|" buildconf/package.ini
+
+# List of plugins to build.
+PLUGINS="cache ping rpc corerouter fastrouter http ugreen signal syslog"
+
+# Decide which language plugins to build.
+[ "${UWSGI_ENABLE_PYTHON}" = "yes" ] && PLUGINS="${PLUGINS} python"
+[ "${UWSGI_ENABLE_PSGI}"   = "yes" ] && PLUGINS="${PLUGINS} psgi"
+[ "${UWSGI_ENABLE_RACK}"   = "yes" ] && PLUGINS="${PLUGINS} rack"
+[ "${UWSGI_ENABLE_PHP}"    = "yes" ] && PLUGINS="${PLUGINS} php"
+[ "${UWSGI_ENABLE_V8}"     = "yes" ] && PLUGINS="${PLUGINS} v8"
+
+# Build plugins.
+for PLUGIN in ${PLUGINS} ; do
+  CFLAGS="${SLKCFLAGS}" \
+  python uwsgiconfig.py --plugin "plugins/${PLUGIN}" "package"
+done
+
+# Use python3 to build plugin for it.
+if [ "${UWSGI_ENABLE_PYTHON3}" = "yes" ]; then
+  CFLAGS="${SLKCFLAGS}" \
+  python3 uwsgiconfig.py --plugin plugins/python package python3
+fi
+
+# Create a few symlinks for automatic plugin loading.
+( cd ${PKG}/usr/bin
+  [ "${UWSGI_ENABLE_PYTHON}"  = "yes" ] && ln -sf uwsgi uwsgi_python  || true
+  [ "${UWSGI_ENABLE_PYTHON3}" = "yes" ] && ln -sf uwsgi uwsgi_python3 || true
+  [ "${UWSGI_ENABLE_PSGI}"    = "yes" ] && ln -sf uwsgi uwsgi_psgi || true
+  [ "${UWSGI_ENABLE_RACK}"    = "yes" ] && ln -sf uwsgi uwsgi_rack || true
+  [ "${UWSGI_ENABLE_PHP}"     = "yes" ] && ln -sf uwsgi uwsgi_php  || true
+  [ "${UWSGI_ENABLE_V8}"      = "yes" ] && ln -sf uwsgi uwsgi_v8   || true
+)
+
+find ${PKG} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Install config, rc-script and logrotate rule
+cat "${CWD}/uwsgi.ini" > "${PKG}/etc/uwsgi/uwsgi.ini.new"
+cat "${CWD}/rc.uwsgi" > "${PKG}/etc/rc.d/rc.uwsgi.new"
+cat "${CWD}/uwsgi.logrotate" > "${PKG}/etc/logrotate.d/uwsgi.new"
+
+mkdir -p "${PKG}/usr/doc/${PRGNAM}-${VERSION}"
+cp -a LICENSE README "${PKG}/usr/doc/${PRGNAM}-${VERSION}"
+cat "${CWD}/${PRGNAM}.SlackBuild" > "${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild"
+
+# Installation scripts
+mkdir -p "${PKG}/install"
+
+# Add post-installation script
+cat "${CWD}/doinst.sh" > "${PKG}/install/doinst.sh"
+
+# Add slack-desc
+cat > "${PKG}/install/slack-desc" << EOF
+     |-----handy-ruler------------------------------------------------------|
+uwsgi: uwsgi (fast web application server)
+uwsgi:
+uwsgi: uWSGI is a fast, self-healing, developer/sysadmin-friendly application
+uwsgi: server coded in pure C.  Born as a WSGI-only server, over time it has
+uwsgi: evolved in a complete stack for networked/clustered web applications,
+uwsgi: implementing message/object passing, caching, RPC and process
+uwsgi: management.  It is designed to be fully modular.
+uwsgi:
+uwsgi: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi:
+uwsgi:
+EOF
+
+# uWSGI base deps
+UWSGI_DEPS="attr,libcap,xz,zlib,libxml2,openssl-solibs|openssl,pcre,util-linux"
+
+# Python 2 module deps
+[[ "${UWSGI_ENABLE_PYTHON}" ]] && UWSGI_DEPS="${UWSGI_DEPS},python"
+# Perl module deps
+[[ "${UWSGI_ENABLE_PSGI}" ]] && UWSGI_DEPS="${UWSGI_DEPS},perl"
+# Ruby module deps
+[[ "${UWSGI_ENABLE_RACK}" ]] && UWSGI_DEPS="${UWSGI_DEPS},ruby"
+# PHP module deps
+[[ "${UWSGI_ENABLE_PHP}" ]] && UWSGI_DEPS="${UWSGI_DEPS},gcc,libtool,cxxlibs|gcc-g++,libmcrypt,php"
+
+# Add deps info into package
+echo "${UWSGI_DEPS}" > "${PKG}/install/slack-required"
+
+cd "${PKG}"
+/sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+
