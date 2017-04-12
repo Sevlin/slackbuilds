@@ -62,14 +62,17 @@ UWSGI_ENABLE_PYTHON=${UWSGI_ENABLE_PYTHON:-"yes"}
 # python3 to be installed.
 UWSGI_ENABLE_PYTHON3=${UWSGI_ENABLE_PYTHON3:-"no"}
 
-# Perl UWSGI_ENABLE_PSGI plugin.
+# Build Perl plugin.
 UWSGI_ENABLE_PSGI=${UWSGI_ENABLE_PSGI:-"yes"}
 
-# Build Ruby Rack plugin.
-UWSGI_ENABLE_RACK=${UWSGI_ENABLE_RACK:-"yes"}
+# Build Ruby plugin.
+UWSGI_ENABLE_RUBY=${UWSGI_ENABLE_RUBY:-"yes"}
 
 # Build PHP plugin.
 UWSGI_ENABLE_PHP=${UWSGI_ENABLE_PHP:-"no"}
+
+# Build Lua plugin.
+UWSGI_ENABLE_LUA=${UWSGI_ENABLE_LUA:-"no"}
 
 # Build V8 plugin.
 UWSGI_ENABLE_V8=${UWSGI_ENABLE_V8:-"no"}
@@ -90,7 +93,7 @@ find -L . \
  -exec chmod 644 {} \;
 
 # Create build config file.
-cat > "buildconf/package.ini" <<EOF
+cat > "buildconf/uwsgi-base.ini" <<EOF
 [uwsgi]
 inherit = base
 plugin_dir = /usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}
@@ -99,7 +102,7 @@ EOF
 
 # Build uWSGI core.
 CFLAGS="${SLKCFLAGS}" \
-python uwsgiconfig.py --build package
+python uwsgiconfig.py --build uwsgi-base
 install -D -m 0755 uwsgi "${PKG}/usr/bin/uwsgi"
 
 # Create directories
@@ -111,39 +114,22 @@ mkdir -p "${PKG}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}" \
          "${PKG}/var/log/uwsgi"
 
 # Change the path, so that plugins would be placed inside ${PKG}.
-sed -i "s|= /usr|= ${PKG}/usr|" buildconf/package.ini
+sed "s|= /usr|= ${PKG}/usr|" buildconf/uwsgi-base.ini > buildconf/base-plugins.ini
 
 # List of plugins to build.
 PLUGINS="cache ping rpc corerouter fastrouter http ugreen signal syslog"
 
-# Decide which language plugins to build.
-[ "${UWSGI_ENABLE_PYTHON}" = "yes" ] && PLUGINS="${PLUGINS} python"
-[ "${UWSGI_ENABLE_PSGI}"   = "yes" ] && PLUGINS="${PLUGINS} psgi"
-[ "${UWSGI_ENABLE_RACK}"   = "yes" ] && PLUGINS="${PLUGINS} rack"
-[ "${UWSGI_ENABLE_PHP}"    = "yes" ] && PLUGINS="${PLUGINS} php"
-[ "${UWSGI_ENABLE_V8}"     = "yes" ] && PLUGINS="${PLUGINS} v8"
-
 # Build plugins.
 for PLUGIN in ${PLUGINS} ; do
   CFLAGS="${SLKCFLAGS}" \
-  python uwsgiconfig.py --plugin "plugins/${PLUGIN}" "package"
+  python uwsgiconfig.py --plugin "plugins/${PLUGIN}" "base-plugins"
 done
 
 # Use python3 to build plugin for it.
 if [ "${UWSGI_ENABLE_PYTHON3}" = "yes" ]; then
   CFLAGS="${SLKCFLAGS}" \
-  python3 uwsgiconfig.py --plugin plugins/python package python3
+  python3 uwsgiconfig.py --plugin plugins/python base-plugins python3
 fi
-
-# Create a few symlinks for automatic plugin loading.
-( cd ${PKG}/usr/bin
-  [ "${UWSGI_ENABLE_PYTHON}"  = "yes" ] && ln -sf uwsgi uwsgi_python  || true
-  [ "${UWSGI_ENABLE_PYTHON3}" = "yes" ] && ln -sf uwsgi uwsgi_python3 || true
-  [ "${UWSGI_ENABLE_PSGI}"    = "yes" ] && ln -sf uwsgi uwsgi_psgi || true
-  [ "${UWSGI_ENABLE_RACK}"    = "yes" ] && ln -sf uwsgi uwsgi_rack || true
-  [ "${UWSGI_ENABLE_PHP}"     = "yes" ] && ln -sf uwsgi uwsgi_php  || true
-  [ "${UWSGI_ENABLE_V8}"      = "yes" ] && ln -sf uwsgi uwsgi_v8   || true
-)
 
 find ${PKG} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
@@ -179,21 +165,259 @@ uwsgi:
 uwsgi:
 EOF
 
-# uWSGI base deps
-UWSGI_DEPS="attr,libcap,xz,zlib,libxml2,openssl-solibs|openssl,pcre,util-linux"
-
-# Python 2 module deps
-[[ "${UWSGI_ENABLE_PYTHON}" ]] && UWSGI_DEPS="${UWSGI_DEPS},python"
-# Perl module deps
-[[ "${UWSGI_ENABLE_PSGI}" ]] && UWSGI_DEPS="${UWSGI_DEPS},perl"
-# Ruby module deps
-[[ "${UWSGI_ENABLE_RACK}" ]] && UWSGI_DEPS="${UWSGI_DEPS},ruby"
-# PHP module deps
-[[ "${UWSGI_ENABLE_PHP}" ]] && UWSGI_DEPS="${UWSGI_DEPS},gcc,libtool,cxxlibs|gcc-g++,libmcrypt,php"
-
 # Add deps info into package
-echo "${UWSGI_DEPS}" > "${PKG}/install/slack-required"
+echo "attr,libcap,xz,zlib,libxml2,openssl-solibs|openssl,pcre,util-linux" > "${PKG}/install/slack-required"
 
-cd "${PKG}"
-/sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+pushd "${PKG}"
+    /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+popd
+
+##################
+# Python plug-in #
+##################
+if [ "${UWSGI_ENABLE_PYTHON}" = 'yes' ]; then
+    PKG_PYTHON="${TMP}/package-${PRGNAM}-python"
+    rm -rf "${PKG_PYTHON}"
+    mkdir -p "${PKG_PYTHON}"
+
+    # Change the path, so that plugins would be placed inside ${PKG_PYTHON}.
+    sed "s|= /usr|= ${PKG_PYTHON}/usr|" buildconf/uwsgi-base.ini > buildconf/python-plugin.ini
+
+    # Create plugin directory
+    mkdir -p "${PKG_PYTHON}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}"
+
+    # Build the plugin
+    python uwsgiconfig.py --plugin "plugins/python" "python-plugin"
+
+    # Strip binaries
+    find ${PKG_PYTHON} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+    # Installation scripts
+    mkdir -p "${PKG_PYTHON}/install"
+
+    # Add slack-desc
+    cat > "${PKG_PYTHON}/install/slack-desc" << EOF
+            |-----handy-ruler------------------------------------------------------|
+uwsgi-python: uwsgi-python (Python plug-in for uWSGI)
+uwsgi-python:
+uwsgi-python: This plug-in provides Python bindings for uWSGI.
+uwsgi-python:
+uwsgi-python: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi-python:
+uwsgi-python:
+uwsgi-python:
+uwsgi-python:
+uwsgi-python:
+uwsgi-python:
+EOF
+
+    # Add deps
+    echo "uwsgi,python" > "${PKG_PYTHON}/install/slack-required"
+
+    # Build package
+    pushd "${PKG_PYTHON}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-python-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+fi
+
+################
+# Perl plug-in #
+################
+if [ "${UWSGI_ENABLE_PSGI}" = 'yes' ]; then
+    PKG_PSGI="${TMP}/package-${PRGNAM}-psgi"
+    rm -rf "${PKG_PSGI}"
+    mkdir -p "${PKG_PSGI}"
+
+    # Change the path, so that plugins would be placed inside ${PKG_PSGI}.
+    sed "s|= /usr|= ${PKG_PSGI}/usr|" buildconf/uwsgi-base.ini > buildconf/psgi-plugin.ini
+
+    # Create plugin directory
+    mkdir -p "${PKG_PSGI}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}"
+
+    # Build the plugin
+    python uwsgiconfig.py --plugin "plugins/psgi" "psgi-plugin"
+
+    # Strip binaries
+    find ${PKG_PSGI} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+    # Installation scripts
+    mkdir -p "${PKG_PSGI}/install"
+
+    # Add slack-desc
+    cat > "${PKG_PSGI}/install/slack-desc" << EOF
+          |-----handy-ruler------------------------------------------------------|
+uwsgi-psgi: uwsgi-psgi (Perl plug-in for uWSGI)
+uwsgi-psgi:
+uwsgi-psgi: This plug-in provides Perl bindings for uWSGI.
+uwsgi-psgi:
+uwsgi-psgi: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi-psgi:
+uwsgi-psgi:
+uwsgi-psgi:
+uwsgi-psgi:
+uwsgi-psgi:
+uwsgi-psgi:
+EOF
+
+    # Add deps
+    echo "uwsgi,perl" > "${PKG_PSGI}/install/slack-required"
+
+    # Build package
+    pushd "${PKG_PSGI}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-psgi-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+fi
+
+################
+# Ruby plug-in #
+################
+if [ "${UWSGI_ENABLE_RUBY}" = 'yes' ]; then
+    PKG_RUBY="${TMP}/package-${PRGNAM}-ruby"
+    rm -rf "${PKG_RUBY}"
+    mkdir -p "${PKG_RUBY}"
+
+    # Change the path, so that plugins would be placed inside ${PKG_RUBY}.
+    sed "s|= /usr|= ${PKG_RUBY}/usr|" buildconf/uwsgi-base.ini > buildconf/ruby-plugin.ini
+
+    # Create plugin directory
+    mkdir -p "${PKG_RUBY}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}"
+
+    # Build the plugin
+    python uwsgiconfig.py --plugin "plugins/rack"      "ruby-plugin"
+    python uwsgiconfig.py --plugin "plugins/rbthreads" "ruby-plugin"
+    python uwsgiconfig.py --plugin "plugins/fiber"     "ruby-plugin"
+
+    # Strip binaries
+    find ${PKG_RUBY} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+    # Installation scripts
+    mkdir -p "${PKG_RUBY}/install"
+
+    # Add slack-desc
+    cat > "${PKG_RUBY}/install/slack-desc" << EOF
+          |-----handy-ruler------------------------------------------------------|
+uwsgi-ruby: uwsgi-ruby (Ruby plug-in for uWSGI)
+uwsgi-ruby:
+uwsgi-ruby: This plug-in provides Ruby bindings for uWSGI.
+uwsgi-ruby:
+uwsgi-ruby: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi-ruby:
+uwsgi-ruby:
+uwsgi-ruby:
+uwsgi-ruby:
+uwsgi-ruby:
+uwsgi-ruby:
+EOF
+
+    # Add deps
+    echo "uwsgi,ruby,gmp" > "${PKG_RUBY}/install/slack-required"
+
+    # Build package
+    pushd "${PKG_RUBY}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-ruby-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+fi
+
+###############
+# PHP plug-in #
+###############
+if [ "${UWSGI_ENABLE_PHP}" = 'yes' ]; then
+    PKG_PHP="${TMP}/package-${PRGNAM}-php"
+    rm -rf "${PKG_PHP}"
+    mkdir -p "${PKG_PHP}"
+
+    # Change the path, so that plugins would be placed inside ${PKG_PHP}.
+    sed "s|= /usr|= ${PKG_PHP}/usr|" buildconf/uwsgi-base.ini > buildconf/php-plugin.ini
+
+    # Create plugin directory
+    mkdir -p "${PKG_PHP}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}"
+
+    # Build the plugin
+    python uwsgiconfig.py --plugin "plugins/php" "php-plugin"
+
+    # Strip binaries
+    find ${PKG_PHP} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+    # Installation scripts
+    mkdir -p "${PKG_PHP}/install"
+
+    # Add slack-desc
+    cat > "${PKG_PHP}/install/slack-desc" << EOF
+         |-----handy-ruler------------------------------------------------------|
+uwsgi-php: uwsgi-php (PHP plug-in for uWSGI)
+uwsgi-php:
+uwsgi-php: This plug-in provides PHP bindings for uWSGI.
+uwsgi-php:
+uwsgi-php: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi-php:
+uwsgi-php:
+uwsgi-php:
+uwsgi-php:
+uwsgi-php:
+uwsgi-php:
+EOF
+
+    # Add deps
+    echo "uwsgi,gcc,libtool,cxxlibs|gcc-g++,libmcrypt,php" > "${PKG_PHP}/install/slack-required"
+
+    # Build package
+    pushd "${PKG_PHP}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-php-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+fi
+
+
+###############
+# LUA plug-in #
+###############
+if [ "${UWSGI_ENABLE_LUA}" = 'yes' ]; then
+    PKG_LUA="${TMP}/package-${PRGNAM}-lua"
+    rm -rf "${PKG_LUA}"
+    mkdir -p "${PKG_LUA}"
+
+    # Change the path, so that plugins would be placed inside ${PKG_LUA}.
+    sed "s|= /usr|= ${PKG_LUA}/usr|" buildconf/uwsgi-base.ini > buildconf/lua-plugin.ini
+
+    # Create plugin directory
+    mkdir -p "${PKG_LUA}/usr/lib${LIBDIRSUFFIX}/uwsgi-${VERSION}"
+
+    # Build the plugin
+    python uwsgiconfig.py --plugin "plugins/lua" "lua-plugin"
+
+    # Strip binaries
+    find ${PKG_LUA} | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+    # Installation scripts
+    mkdir -p "${PKG_LUA}/install"
+
+    # Add slack-desc
+    cat > "${PKG_LUA}/install/slack-desc" << EOF
+         |-----handy-ruler------------------------------------------------------|
+uwsgi-lua: uwsgi-lua (Lua plug-in for uWSGI)
+uwsgi-lua:
+uwsgi-lua: This plug-in provides Lua bindings for uWSGI.
+uwsgi-lua:
+uwsgi-lua: Homepage: https://uwsgi-docs.readthedocs.org/
+uwsgi-lua:
+uwsgi-lua:
+uwsgi-lua:
+uwsgi-lua:
+uwsgi-lua:
+uwsgi-lua:
+EOF
+
+    # Add deps
+    echo "uwsgi,lua" > "${PKG_LUA}/install/slack-required"
+
+    # Build package
+    pushd "${PKG_LUA}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-lua-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+fi
+
 
