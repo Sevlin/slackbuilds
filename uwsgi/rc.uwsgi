@@ -1,0 +1,92 @@
+#!/bin/sh
+
+if [ -r "/etc/default/uwsgi" ]; then
+    source /etc/default/uwsgi
+fi
+
+BINARY=${BINARY:-/usr/bin/uwsgi}
+PIDFILE=${PIDFILE:-/var/run/uwsgi/uwsgi.pid}
+CNFFILE=${CNFFILE:-/etc/uwsgi/uwsgi.ini}
+OPTS=${OPTS:-"--ini ${CNFFILE}"}
+
+# Read pid
+if [ -r "${PIDFILE}" ]; then
+    PID=$(cat "${PIDFILE}")
+fi
+
+wait_pid()  
+{
+    while test -d "/proc/${PID}"; do
+        echo -n '.'
+        sleep 1
+    done
+}
+
+uwsgi_start()
+{
+    CMD="${BINARY} ${OPTS}"
+    echo "Starting uWSGI : ${CMD}"
+    msg=$(${CMD} 2>&1)
+    if [ ${?} -ne 0 ]; then
+        echo "${msg}"
+    fi
+}
+
+uwsgi_stop()
+{
+    echo -n "Shutting down uWSGI (${PID})..."
+    if [ ! -z "${PID}" ]; then
+        kill -QUIT ${PID}
+        wait_pid
+        echo
+    fi
+}
+
+uwsgi_restart()
+{
+    uwsgi_stop
+    uwsgi_start
+}
+
+uwsgi_reload()
+{
+    echo "Reloading uWSGI (${PID})..."
+    if [ ! -z "${PID}" ]; then
+        kill -HUP ${PID}
+    fi
+}
+
+uwsgi_brutal_reload()
+{
+    echo "BRUTALLY reloading uWSGI..."
+    if [ ! -z "${PID}" ]; then
+        kill -TERM ${PID}
+    fi
+}
+
+uwsgi_status()
+{
+   echo -n "uWSGI status: "
+
+   if [ -d "/proc/${PID}" ]; then
+       echo "RUNNING"
+   else
+       echo "STOPPED"
+   fi
+}
+
+case "${1}" in
+	'start'   ) uwsgi_start   ;;
+	'stop'    ) uwsgi_stop    ;;
+	'restart' ) uwsgi_restart ;;
+	'reload'  ) uwsgi_reload  ;;
+   'brutal-reload') uwsgi_brutal_reload ;;
+	'status'  ) uwsgi_status  ;;
+	*)
+		echo "Usage: ${0} {start|stop|restart|reload|brutal-reload|status}"
+		exit 1
+	;;
+esac
+
+exit 0
+

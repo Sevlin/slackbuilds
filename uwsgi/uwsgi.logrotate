@@ -1,0 +1,10 @@
+/var/log/uwsgi/*.log {
+    copytruncate
+    daily
+    rotate 14
+    compress
+    dateext
+    delaycompress
+    missingok
+    notifempty
+}
