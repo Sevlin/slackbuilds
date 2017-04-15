@@ -121,11 +121,11 @@ done
 find $PKG/usr/man/man1 -type f -name "*.man" -exec rename '.man' '.1' {} \;
 find $PKG/usr/man/man1 -type f -name "*.?" -exec gzip -9f {} \;
 
-install -m 0644 $TMP/synergy-master/synergy/res/synergy.ico \
-$PKG/usr/share/icons/hicolor/256x256
+install -m 0644 res/synergy.ico \
+                $PKG/usr/share/icons/hicolor/256x256
 
-install -D -m 0644 $TMP/synergy-master/synergy/res/synergy.desktop \
-$PKG/usr/share/applications
+install -D -m 0644 res/synergy.desktop \
+                   $PKG/usr/share/applications
 
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
