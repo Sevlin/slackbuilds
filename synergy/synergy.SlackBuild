@@ -46,6 +46,7 @@ CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-$(nproc)}
 
 if [ "$ARCH" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
@@ -84,6 +85,7 @@ popd
 
 CXXFLAGS="$SLKCFLAGS" \
 cmake -DCMAKE_INSTALL_PREFIX=/usr .
+make -j ${NUMJOBS}
 
 # installation not implemented
 mkdir -p $PKG/usr/bin $PKG/usr/doc/$PRGNAM-$VERSION $PKG/usr/man/man1 \
