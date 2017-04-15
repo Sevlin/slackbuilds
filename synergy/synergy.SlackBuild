@@ -76,8 +76,14 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-sh hm.sh configure --generator=1 --release
-CXXFLAGS="$SLKCFLAGS" sh hm.sh build
+pushd ext
+    rm -rf gmock-1.6.0 gtest-1.6.0
+    unzip gmock-1.6.0.zip -d gmock-1.6.0
+    unzip gtest-1.6.0.zip -d gtest-1.6.0
+popd
+
+CXXFLAGS="$SLKCFLAGS" \
+cmake -DCMAKE_INSTALL_PREFIX=/usr .
 
 # installation not implemented
 mkdir -p $PKG/usr/bin $PKG/usr/doc/$PRGNAM-$VERSION $PKG/usr/man/man1 \
