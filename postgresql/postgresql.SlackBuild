@@ -250,6 +250,14 @@ if [ "${PGSQL_CLIENT_PKG}" = 'yes' ]; then
     make -C src/interfaces install-strip DESTDIR="${PKG_CLIENT}"
     make -C doc install DESTDIR="${PKG_CLIENT}"
 
+    find ${PKG_CLIENT}/usr/man -type f -exec gzip -9 {} \;
+    for i in $( find ${PKG_CLIENT}/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+    cp -a COPYRIGHT HISTORY README doc/KNOWN_BUGS doc/MISSING_FEATURES doc/TODO ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/
+    rm -rf ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/{man.tar.gz,man1,manl,man7,postgres.tar.gz}
+    cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
+    cat ${CWD}/README.SBo > ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/README.SBo
+
     mkdir -p "${PKG_CLIENT}/install"
     cat > "${PKG_CLIENT}/install/slack-desc" << EOF
 # HOW TO EDIT THIS FILE:
