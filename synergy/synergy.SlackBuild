@@ -97,23 +97,26 @@ pushd src/gui
 popd
 
 # installation not implemented
-mkdir -p $PKG/usr/bin $PKG/usr/doc/$PRGNAM-$VERSION $PKG/usr/man/man1 \
-$PKG/usr/share/icons/hicolor/256x256 $PKG/usr/share/applications
+mkdir -p $PKG/usr/bin \
+         $PKG/usr/doc/$PRGNAM-$VERSION \
+         $PKG/usr/man/man1 \
+         $PKG/usr/share/icons/hicolor/256x256 \
+         $PKG/usr/share/applications
 
 for file in synergy synergyc synergyd synergys syntool usynergy ; do
-  install -s -m 0755 $TMP/synergy-master/synergy/bin/$file $PKG/usr/bin
+  install -s -m 0755 bin/$file $PKG/usr/bin
 done
 
 for file in synergy.conf.example synergy.conf.example-advanced synergy.conf.example-basic ; do
-  install -m 0644 $TMP/synergy-master/synergy/doc/$file $PKG/usr/doc/$PRGNAM-$VERSION
+  install -m 0644 doc/$file $PKG/usr/doc/$PRGNAM-$VERSION
 done
 
 for file in COMPILE ChangeLog INSTALL LICENSE README ; do
-  install -m 0644 $TMP/synergy-master/synergy/$file $PKG/usr/doc/$PRGNAM-$VERSION
+  install -m 0644 $file $PKG/usr/doc/$PRGNAM-$VERSION
 done
 
 for file in synergyc.man synergys.man ; do
-  install -m 0644 $TMP/synergy-master/synergy/doc/$file $PKG/usr/man/man1
+  install -m 0644 doc/$file $PKG/usr/man/man1
 done
 find $PKG/usr/man/man1 -type f -name "*.man" -exec rename '.man' '.1' {} \;
 find $PKG/usr/man/man1 -type f -name "*.?" -exec gzip -9f {} \;
