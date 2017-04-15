@@ -83,9 +83,17 @@ pushd ext
     unzip gtest-1.6.0.zip -d gtest-1.6.0
 popd
 
+# Build synergy
 CXXFLAGS="$SLKCFLAGS" \
 cmake -DCMAKE_INSTALL_PREFIX=/usr .
 make -j ${NUMJOBS}
+
+# Buil GUI
+pushd src/gui
+  QMAKE_CXXFLAGS="${SLKCFLAGS}" \
+  qmake INCLUDEPATH+='/usr/include/avahi-compat-libdns_sd'
+  make -j ${NUMJOBS}
+popd
 
 # installation not implemented
 mkdir -p $PKG/usr/bin $PKG/usr/doc/$PRGNAM-$VERSION $PKG/usr/man/man1 \
