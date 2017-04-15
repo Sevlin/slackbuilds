@@ -32,7 +32,7 @@ PRGNAM=synergy
 VERSION=${VERSION:-1.8.8}
 REV=${REV:-stable}
 BUILD=${BUILD:-1}
-TAG=${TAG:-_SBo}
+TAG=${TAG:-shin}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -46,6 +46,7 @@ CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+NUMJOBS=${NUMJOBS:-$(nproc)}
 
 if [ "$ARCH" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
@@ -76,42 +77,90 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-sh hm.sh configure --generator=1 --release
-CXXFLAGS="$SLKCFLAGS" sh hm.sh build
+pushd ext
+    rm -rf gmock-1.6.0 gtest-1.6.0
+    unzip gmock-1.6.0.zip -d gmock-1.6.0
+    unzip gtest-1.6.0.zip -d gtest-1.6.0
+popd
+
+# Build synergy
+CXXFLAGS="$SLKCFLAGS" \
+cmake -DCMAKE_INSTALL_PREFIX=/usr .
+make -j ${NUMJOBS}
+
+# Buil GUI
+pushd src/gui
+  qmake \
+    QMAKE_CXXFLAGS+="${SLKCFLAGS}" \
+    INCLUDEPATH+='/usr/include/avahi-compat-libdns_sd'
+  make -j ${NUMJOBS}
+popd
 
 # installation not implemented
-mkdir -p $PKG/usr/bin $PKG/usr/doc/$PRGNAM-$VERSION $PKG/usr/man/man1 \
-$PKG/usr/share/icons/hicolor/256x256 $PKG/usr/share/applications
+mkdir -p $PKG/usr/bin \
+         $PKG/usr/doc/$PRGNAM-$VERSION \
+         $PKG/usr/man/man1 \
+         $PKG/usr/share/icons/hicolor/256x256 \
+         $PKG/usr/share/applications
 
 for file in synergy synergyc synergyd synergys syntool usynergy ; do
-  install -s -m 0755 $TMP/synergy-master/synergy/bin/$file $PKG/usr/bin
+  install -s -m 0755 bin/$file $PKG/usr/bin
 done
 
 for file in synergy.conf.example synergy.conf.example-advanced synergy.conf.example-basic ; do
-  install -m 0644 $TMP/synergy-master/synergy/doc/$file $PKG/usr/doc/$PRGNAM-$VERSION
+  install -m 0644 doc/$file $PKG/usr/doc/$PRGNAM-$VERSION
 done
 
 for file in COMPILE ChangeLog INSTALL LICENSE README ; do
-  install -m 0644 $TMP/synergy-master/synergy/$file $PKG/usr/doc/$PRGNAM-$VERSION
+  install -m 0644 $file $PKG/usr/doc/$PRGNAM-$VERSION
 done
 
 for file in synergyc.man synergys.man ; do
-  install -m 0644 $TMP/synergy-master/synergy/doc/$file $PKG/usr/man/man1
+  install -m 0644 doc/$file $PKG/usr/man/man1
 done
 find $PKG/usr/man/man1 -type f -name "*.man" -exec rename '.man' '.1' {} \;
 find $PKG/usr/man/man1 -type f -name "*.?" -exec gzip -9f {} \;
 
-install -m 0644 $TMP/synergy-master/synergy/res/synergy.ico \
-$PKG/usr/share/icons/hicolor/256x256
+install -m 0644 res/synergy.ico \
+                $PKG/usr/share/icons/hicolor/256x256
 
-install -D -m 0644 $TMP/synergy-master/synergy/res/synergy.desktop \
-$PKG/usr/share/applications
+install -D -m 0644 res/synergy.desktop \
+                   $PKG/usr/share/applications
+
+sed -i 's|Icon=/usr/share/icons/synergy.ico|Icon=/usr/share/icons/hicolor/256x256/synergy.ico|g' \
+    $PKG/usr/share/applications/synergy.desktop
 
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
+# Add slack-desc
+cat > "${PKG}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+synergy: Synergy (Control sharing over the network)
+synergy:
+synergy: Synergy lets you easily share your mouse and keyboard between
+synergy: multiple computers on your desk.
+synergy:
+synergy:
+synergy: Homepage: http://synergy-foss.org/
+synergy:
+synergy:
+synergy:
+synergy:
+EOF
+
+# Add slack-required
+echo "avahi,bzip2,curl,cyrus-sasl,dbus,expat,fontconfig,freetype,gcc,gcc-g++,glib2,harfbuzz,libICE,libSM,libX11,libXau,libXdmcp,libXext,libXi,libXinerama,libXrandr,libXrender,libXtst,libffi,libpng,libssh2,libxcb,openldap-client,openssl|openssl-solibs,qt,util-linux,zlib" > "${PKG}/install/slack-required"
+
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
