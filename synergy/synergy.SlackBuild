@@ -127,6 +127,9 @@ install -m 0644 res/synergy.ico \
 install -D -m 0644 res/synergy.desktop \
                    $PKG/usr/share/applications
 
+sed -i 's|Icon=/usr/share/icons/synergy.ico|Icon=/usr/share/icons/hicolor/256x256/synergy.ico|g' \
+    $PKG/usr/share/applications/synergy.desktop
+
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
