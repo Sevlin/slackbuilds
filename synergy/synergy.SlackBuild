@@ -90,8 +90,9 @@ make -j ${NUMJOBS}
 
 # Buil GUI
 pushd src/gui
-  QMAKE_CXXFLAGS="${SLKCFLAGS}" \
-  qmake INCLUDEPATH+='/usr/include/avahi-compat-libdns_sd'
+  qmake \
+    QMAKE_CXXFLAGS+="${SLKCFLAGS}" \
+    INCLUDEPATH+='/usr/include/avahi-compat-libdns_sd'
   make -j ${NUMJOBS}
 popd
 
