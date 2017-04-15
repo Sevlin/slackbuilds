@@ -28,7 +28,7 @@
 # Modified by the SlackBuilds.org Project
 
 PRGNAM=postgresql
-VERSION=${VERSION:-"9.6.0"}
+VERSION=${VERSION:-"9.6.2"}
 BUILD=${BUILD:-1}
 TAG=${TAG:-"sev"}
 
