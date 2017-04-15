@@ -158,6 +158,9 @@ synergy:
 synergy:
 EOF
 
+# Add slack-required
+echo "avahi,bzip2,curl,cyrus-sasl,dbus,expat,fontconfig,freetype,gcc,gcc-g++,glib2,harfbuzz,libICE,libSM,libX11,libXau,libXdmcp,libXext,libXi,libXinerama,libXrandr,libXrender,libXtst,libffi,libpng,libssh2,libxcb,openldap-client,openssl|openssl-solibs,qt,util-linux,zlib" > "${PKG}/install/slack-required"
+
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
 
