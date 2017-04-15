@@ -2,9 +2,12 @@
 
 # Slackware build script for "synergy".
 
+# Written by Marcel Saegebarth
+# Modified by Anatolii Zarudniy
+
 # Copyright 2013-2015 Marcel Saegebarth <marc@mos6581.de>
+# Copyright 2017 Anatolii Zarudniy <shin@nix.org.ua>
 # All rights reserved.
-# Modified and updated 2017 by Anatolii Zarudniy <shin@nix.org.ua>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
