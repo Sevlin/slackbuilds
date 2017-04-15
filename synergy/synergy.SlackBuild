@@ -32,7 +32,7 @@ PRGNAM=synergy
 VERSION=${VERSION:-1.8.8}
 REV=${REV:-stable}
 BUILD=${BUILD:-1}
-TAG=${TAG:-_SBo}
+TAG=${TAG:-shin}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
