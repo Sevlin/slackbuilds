@@ -1,1 +1,1 @@
-libidn,libtool,openldap-client,zlib,curl,cyrus-sasl,iksemel,libgcrypt,libgpg-error,libssh2,net-snmp,openssl-solibs|openssl,postgresql,unixODBC
+libidn,libtool,openldap-client,zlib,curl,cyrus-sasl,iksemel,libgcrypt,libgpg-error,libssh2,net-snmp,openssl-solibs|openssl,postgresql-client|postgresql,unixODBC

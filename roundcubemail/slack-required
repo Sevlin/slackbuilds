@@ -1,1 +1,1 @@
-php,postgresql|mariadb|mysql
+php,postgresql-client|postgresql|mariadb-client|mariadb|mysql
