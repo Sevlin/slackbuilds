@@ -2,7 +2,7 @@
 
 # Slackware build script for jabberd 2.x
 
-# Copyright 2011-2015, Mykyta Solomko <sev@nix.org.ua>, Ukraine, Kyiv
+# Copyright 2011-2017, Mykyta Solomko <sev@nix.org.ua>, Ukraine, Kyiv
 # All rights reserved.
 #
 # Permission to use, copy, modify, and distribute this software for any purpose
@@ -24,7 +24,7 @@ set -e
 
 PRGNAM=jabberd2
 SRCNAM=jabberd
-VERSION=${VERSION:-2.4.0}
+VERSION=${VERSION:-2.5.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -52,8 +52,7 @@ JABBERD2_ENABLE_MYSQL=${JABBERD2_ENABLE_MYSQL:-no}
 JABBERD2_ENABLE_SQLITE=${JABBERD2_ENABLE_SQLITE:-yes}
 JABBERD2_ENABLE_BDB=${JABBERD2_ENABLE_BDB:-no}
 JABBERD2_ENABLE_LDAP=${JABBERD2_ENABLE_LDAP:-no}
-JABBERD2_ENABLE_FS=${JABBERD2_ENABLE_FS:-no}
-JABBERD2_ENABLE_ORACLE=${JABBERD2_ENABLE_ORACLE:-no}
+JABBERD2_ENABLE_FS=${JABBERD2_ENABLE_FS:-yes}
 # Misc
 JABBERD2_ENABLE_WEBSOCK=${JABBERD2_ENABLE_WEBSOCK:-no}
 JABBERD2_ENABLE_EXPERIMENTAL=${JABBERD2_ENABLE_EXPERIMENTAL:-no}
@@ -141,11 +140,6 @@ if [ "${JABBERD2_ENABLE_FS}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-fs"
 fi
 
-# OracleDB support
-if [ "${JABBERD2_ENABLE_ORACLE}" = 'yes' ]; then
-    EXTRAOPTS="${EXTRAOPTS} --enable-oracle"
-fi
-
 # Websocket support
 if [ "${JABBERD2_ENABLE_WEBSOCK}" = 'yes' ]; then
     EXTRAOPTS="${EXTRAOPTS} --enable-websocket"
@@ -191,6 +185,10 @@ CXXFLAGS="$SLKCFLAGS" \
 make -j ${NUMJOBS}
 make install DESTDIR=${PKG}
 
+# Strip debug symbols
+find "${PKG}" | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+      | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
 mkdir -p ${PKG}/etc/rc.d \
          ${PKG}/etc/default \
          ${PKG}/var/run \
@@ -217,8 +215,8 @@ install -v -m 0644 \
 
 # Rename configuration files
 find $PKG/etc/${PRGNAM} -type f \
-	\( -name '*.xml' -o -name '*.cfg' -o -name '*.conf' \) \
-	-exec mv {} {}.new \;
+        \( -name '*.xml' -o -name '*.cfg' -o -name '*.conf' \) \
+        -exec mv {} {}.new \;
 
 # Remove junk
 rm -rf ${PKG}/etc/init \
@@ -253,18 +251,42 @@ cp -a \
 mkdir -p ${PKG}/usr/share/jabberd2/
 cp -a \
     tools/bdb2mysql.rb tools/bdbdump.pl tools/db-jd14-2-jd2.sql \
-    tools/db-setup.mysql tools/db-setup.oracle tools/db-setup.pgsql \
-    tools/db-setup.sqlite tools/db-update.mysql tools/db-update.pgsql \
-    tools/db-update.sqlite tools/jabberd-authpipe-pam-0.1.pl \
-    tools/jabberd2.schema tools/migrate-jd14dir-2-sqlite.pl \
+    tools/jabberd-authpipe-pam-0.1.pl tools/migrate-jd14dir-2-sqlite.pl \
     tools/migrate.pl tools/pam_jabberd tools/pipe-auth.pl \
    ${PKG}/usr/share/jabberd2
 
 # Installation scripts
 mkdir -p $PKG/install
-for INSTFILE in 'doinst.sh'      \
-                'slack-desc'     \
-                'slack-required' \
+
+# Add doinst.sh
+cat "${CWD}/doinst.sh" > "${PKG}/install/doinst.sh"
+
+# Add slack-desc
+cat > "${PKG}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+        |-----handy-ruler------------------------------------------------------|
+jabberd2: jabberd2 (XMPP server)
+jabberd2:
+jabberd2: jabberd2 is an XMPP server, written in the C language and licensed
+jabberd2: as Free software under the GNU General Public License. It was
+jabberd2: inspired by jabberd14.
+jabberd2:
+jabberd2: Homepage: http://jabberd2.org
+jabberd2:
+jabberd2:
+jabberd2:
+jabberd2:
+EOF
+
+JABBERD2_DEPS='expat,libidn,zlib,libgcrypt,libgpg-error,libgsasl,openssl-solibs|openssl,udns'
+
+for INSTFILE in 'slack-required' \
                 'slack-suggests' \
                 'slack-conflicts'
 do
@@ -274,42 +296,265 @@ done
 
 # Add PostgreSQL deps
 if [ "${JABBERD2_ENABLE_PGSQL}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-pgsql)" \
-		>> $PKG/install/slack-required
+    PKG_PGSQL="${TMP}/package-${PRGNAM}-pgsql"
+    rm -rf "${PKG_PGSQL}"
+    mkdir -p "${PKG_PGSQL}"
+
+    # Create libdir and mv libraries
+    mkdir -p "${PKG_PGSQL}/usr/lib${LIBDIRSUFFIX}/jabberd"
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/jabberd/"*_pgsql.{la,so} \
+       "${PKG_PGSQL}/usr/lib${LIBDIRSUFFIX}/jabberd"
+
+    # Create dir for SQL schemas
+    mkdir -p "${PKG_PGSQL}/usr/share/jabberd2"
+    cp -a tools/db-setup.pgsql \
+          tools/db-update.pgsql \
+         "${PKG_PGSQL}/usr/share/jabberd2"
+
+    mkdir -p "${PKG_PGSQL}/install"
+
+    # Add slack-desc
+    cat > "${PKG_PGSQL}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+              |-----handy-ruler------------------------------------------------------|
+jabberd2-pgsql: jabberd2-pgsql (PostgreSQL driver for Jabberd2)
+jabberd2-pgsql:
+jabberd2-pgsql: Jabberd2 will be able to use PostgreSQL as authreg and storage
+jabberd2-pgsql: backend.
+jabberd2-pgsql:
+jabberd2-pgsql: Homepage: http://jabberd2.org
+jabberd2-pgsql:
+jabberd2-pgsql:
+jabberd2-pgsql:
+jabberd2-pgsql:
+jabberd2-pgsql:
+EOF
+
+    # Add slack-required
+    echo "jabberd2,postgresql-client|postgresql" > "${PKG_PGSQL}/install/slack-required"
+
+    # Create package
+    pushd "${PKG_PGSQL}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-pgsql-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
 fi
 
 # Add MariaDB/MySQL deps
 if [ "${JABBERD2_ENABLE_MYSQL}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-mysql)" \
-		>> $PKG/install/slack-required
+    PKG_MYSQL="${TMP}/package-${PRGNAM}-mysql"
+    rm -rf "${PKG_MYSQL}"
+    mkdir -p "${PKG_MYSQL}"
+
+    # Create libdir and mv libraries
+    mkdir -p "${PKG_MYSQL}/usr/lib${LIBDIRSUFFIX}/jabberd"
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/jabberd/"*_mysql.{la,so} \
+       "${PKG_MYSQL}/usr/lib${LIBDIRSUFFIX}/jabberd"
+
+    # Create dir for SQL schemas
+    mkdir -p "${PKG_MYSQL}/usr/share/jabberd2"
+    cp -a tools/db-setup.mysql \
+          tools/db-update.mysql \
+         "${PKG_MYSQL}/usr/share/jabberd2"
+
+    mkdir -p "${PKG_MYSQL}/install"
+
+    # Add slack-desc
+    cat > "${PKG_MYSQL}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+              |-----handy-ruler------------------------------------------------------|
+jabberd2-mysql: jabberd2-mysql (MySQL/MariaDB driver for Jabberd2)
+jabberd2-mysql:
+jabberd2-mysql: Jabberd2 will be able to use MySQL/MariaDB as authreg and storage
+jabberd2-mysql: backend.
+jabberd2-mysql:
+jabberd2-mysql: Homepage: http://jabberd2.org
+jabberd2-mysql:
+jabberd2-mysql:
+jabberd2-mysql:
+jabberd2-mysql:
+jabberd2-mysql:
+EOF
+
+    # Add slack-required
+    echo "jabberd2,mariadb-client|mysql-client|mariadb|mysql" > "${PKG_MYSQL}/install/slack-required"
+
+    # Create package
+    pushd "${PKG_MYSQL}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-mysql-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
 fi
 
 # Add SQLite deps
 if [ "${JABBERD2_ENABLE_SQLITE}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-sqlite)" \
-		>> $PKG/install/slack-required
+    PKG_SQLITE="${TMP}/package-${PRGNAM}-sqlite"
+    rm -rf "${PKG_SQLITE}"
+    mkdir -p "${PKG_SQLITE}"
+
+    # Create libdir and mv libraries
+    mkdir -p "${PKG_SQLITE}/usr/lib${LIBDIRSUFFIX}/jabberd"
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/jabberd/"*_sqlite.{la,so} \
+       "${PKG_SQLITE}/usr/lib${LIBDIRSUFFIX}/jabberd"
+
+    # Create dir for SQL schemas
+    mkdir -p "${PKG_SQLITE}/usr/share/jabberd2"
+    cp -a tools/db-setup.sqlite \
+          tools/db-update.sqlite \
+         "${PKG_SQLITE}/usr/share/jabberd2"
+
+    mkdir -p "${PKG_SQLITE}/install"
+
+    # Add slack-desc
+    cat > "${PKG_SQLITE}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+               |-----handy-ruler------------------------------------------------------|
+jabberd2-sqlite: jabberd2-sqlite (SQLite driver for Jabberd2)
+jabberd2-sqlite:
+jabberd2-sqlite: Jabberd2 will be able to use MySQL/MariaDB as authreg and storage
+jabberd2-sqlite: backend.
+jabberd2-sqlite:
+jabberd2-sqlite: Homepage: http://jabberd2.org
+jabberd2-sqlite:
+jabberd2-sqlite:
+jabberd2-sqlite:
+jabberd2-sqlite:
+jabberd2-sqlite:
+EOF
+
+    mkdir -p "${PKG_SQLITE}/install"
+
+    # Add slack-required
+    echo "jabberd2,sqlite" > "${PKG_SQLITE}/install/slack-required"
+
+    # Create package
+    pushd "${PKG_SQLITE}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-sqlite-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
 fi
 
 # Add Berkley DB deps
 if [ "${JABBERD2_ENABLE_BDB}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-berkleydb)" \
-		>> $PKG/install/slack-required
+    PKG_BDB="${TMP}/package-${PRGNAM}-bdb"
+    rm -rf "${PKG_BDB}"
+    mkdir -p "${PKG_BDB}"
+
+    # Create libdir and mv libraries
+    mkdir -p "${PKG_BDB}/usr/lib${LIBDIRSUFFIX}/jabberd"
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/jabberd/"*_db.{la,so} \
+       "${PKG_BDB}/usr/lib${LIBDIRSUFFIX}/jabberd"
+
+    mkdir -p "${PKG_BDB}/install"
+
+    # Add slack-desc
+    cat > "${PKG_BDB}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+            |-----handy-ruler------------------------------------------------------|
+jabberd2-bdb: jabberd2-bdb (Berkley DB driver for Jabberd2)
+jabberd2-bdb:
+jabberd2-bdb: Jabberd2 will be able to use Berkley DB as authreg and storage
+jabberd2-bdb: backend.
+jabberd2-bdb:
+jabberd2-bdb: Homepage: http://jabberd2.org
+jabberd2-bdb:
+jabberd2-bdb:
+jabberd2-bdb:
+jabberd2-bdb:
+jabberd2-bdb:
+EOF
+
+    # Add slack-required
+    echo "jabberd2,db48" > "${PKG_BDB}/install/slack-required"
+
+    # Create package
+    pushd "${PKG_BDB}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-bdb-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
 fi
 
-# Add Berkley DB deps
+# Add LDAP deps
 if [ "${JABBERD2_ENABLE_LDAP}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-ldap)" \
-		>> $PKG/install/slack-required
+    PKG_LDAP="${TMP}/package-${PRGNAM}-ldap"
+    rm -rf "${PKG_LDAP}"
+    mkdir -p "${PKG_LDAP}"
+
+    # Create libdir and mv libraries
+    mkdir -p "${PKG_LDAP}/usr/lib${LIBDIRSUFFIX}/jabberd"
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/jabberd/"*_ldap*.{la,so} \
+       "${PKG_LDAP}/usr/lib${LIBDIRSUFFIX}/jabberd"
+
+    mkdir -p "${PKG_LDAP}/install"
+
+    # Add slack-desc
+    cat > "${PKG_LDAP}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+jabberd2-ldap: jabberd2-ldap (OpenLDAP driver for Jabberd2)
+jabberd2-ldap:
+jabberd2-ldap: Jabberd2 will be able to use OpenLDAP as authreg and storage
+jabberd2-ldap: backend.
+jabberd2-ldap:
+jabberd2-ldap: Homepage: http://jabberd2.org
+jabberd2-ldap:
+jabberd2-ldap:
+jabberd2-ldap:
+jabberd2-ldap:
+jabberd2-ldap:
+EOF
+
+    # Create dir for LDAP schema
+    mkdir -p "${PKG_LDAP}/usr/share/jabberd2"
+    cp -a tools/jabberd2.schema\
+         "${PKG_LDAP}/usr/share/jabberd2"
+
+    # Add slack-required
+    echo "jabberd2,openldap-client|openldap" > "${PKG_LDAP}/install/slack-required"
+
+    # Create package
+    pushd "${PKG_LDAP}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-ldap-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
 fi
+
+#########################
+# jabberd2 base package #
+#########################
 
 # Add Websocket deps
 if [ "${JABBERD2_ENABLE_WEBSOCK}" = 'yes' ]; then
-	echo -n ",$(cat ${CWD}/slack-required-websock)" \
-		>> $PKG/install/slack-required
+    JABBERD2_DEPS="${JABBERD2_DEPS},http-parser"
 fi
 
-# Add \n to deps file
-echo >> $PKG/install/slack-required
+# Add slack-required
+echo "${JABBERD2_DEPS}" > "${PKG}/install/slack-required"
 
 sed -i \
     -e "s/%JABBERDGROUP%/${JABBERDGROUP}/g" \
