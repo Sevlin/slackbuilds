@@ -54,21 +54,22 @@ NUMJOBS=${NUMJOBS:-$(nproc)}
 # For slackbuilds.org, assigned postgres uid/gid are 209/209
 # See http://slackbuilds.org/uid_gid.txt
 # Other popular choice is 26/26
-if ! grep ^postgres: /etc/group 2>&1 > /dev/null; then
+if ! grep -q ^postgres: /etc/group; then
   echo "  You must have a postgres group to run this script."
   echo "    # groupadd -g ${PG_GID} postgres"
   exit 1
-elif ! grep ^postgres: /etc/passwd 2>&1 > /dev/null; then
+elif ! grep -q ^postgres: /etc/passwd; then
   echo "  You must have a postgres user to run this script."
   echo "    # useradd -u ${PG_UID} -g ${PG_GID} -d /var/lib/pgsql postgres"
   exit 1
 fi
 
-# Enable NLS builds using 'ENABLE_NLS=1 ./postgresql.SlackBuild'
-if [ ! -z $ENABLE_NLS  ];then
+PGSQL_ENABLE_NLS=${PGSQL_ENABLE_NLS:-'no'}
+NLS=${NLS:-'disable'}
+
+# Enable NLS builds using 'PGSQL_ENABLE_NLS=yes ./postgresql.SlackBuild'
+if [ "${PGSQL_ENABLE_NLS}" = 'yes'  ];then
   NLS=enable
-else
-  NLS=disable
 fi
 
 if [ "$ARCH" = "i486" ]; then
@@ -87,11 +88,11 @@ fi
 
 set -e
 
-rm -rf ${TMP}/${PRGNAM}-${VERSION} ${PKG}
-mkdir -p ${TMP} ${PKG} ${OUTPUT}
-cd ${TMP}
-tar xvf ${CWD}/${PRGNAM}-${VERSION}.tar.bz2
-cd ${PRGNAM}-${VERSION}
+rm -rf "${TMP}/${PRGNAM}-${VERSION}" "${PKG}"
+mkdir -p "${TMP}" "${PKG}" "${OUTPUT}"
+cd "${TMP}"
+tar xvf "${CWD}/${PRGNAM}-${VERSION}".tar.?z*
+cd "${PRGNAM}-${VERSION}"
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -101,13 +102,13 @@ find -L . \
 
 CFLAGS="$SLKCFLAGS" \
 ./configure \
-  --prefix=/usr/lib${LIBDIRSUFFIX}/${PRGNAM}/${PG_VERSION} \
-  --sysconfdir=/etc/${PRGNAM}/${PG_VERSION} \
-  --includedir=/usr/include \
-  --datarootdir=/usr/share \
-  --mandir=/usr/man \
-  --docdir=/usr/doc/${PRGNAM}-${VERSION} \
-  --datadir=/usr/share/${PRGNAM}-${PG_VERSION} \
+  --prefix="/usr/lib${LIBDIRSUFFIX}/${PRGNAM}/${PG_VERSION}" \
+  --sysconfdir="/etc/${PRGNAM}/${PG_VERSION}" \
+  --includedir="/usr/include" \
+  --datarootdir="/usr/share" \
+  --mandir="/usr/man" \
+  --docdir="/usr/doc/${PRGNAM}-${VERSION}" \
+  --datadir="/usr/share/${PRGNAM}-${PG_VERSION}" \
   --with-openssl \
   --with-tcl \
   --with-perl \
@@ -116,22 +117,22 @@ CFLAGS="$SLKCFLAGS" \
   --with-libxslt \
   --enable-thread-safety \
   --with-system-tzdata=/usr/share/zoneinfo \
-  --$NLS-nls \
-  --build=$ARCH-slackware-linux
+  --${NLS}-nls \
+  --build="${ARCH}-slackware-linux"
 
 make -j ${NUMJOBS}
-make install-strip DESTDIR=${PKG}
-make install-docs DESTDIR=${PKG}
+make install-strip DESTDIR="${PKG}"
+make install-docs DESTDIR="${PKG}"
 
 # create symlinks to shared library for other programs to link against
-( cd ${PKG}/usr/lib${LIBDIRSUFFIX}
-  for i in $(ls ${PRGNAM}/${PG_VERSION}/lib/lib*.so*) ; do ln -sf $i ; done
+( cd "${PKG}/usr/lib${LIBDIRSUFFIX}"
+  for i in $(ls "${PRGNAM}/${PG_VERSION}"/lib/lib*.so*) ; do ln -sf $i ; done
 )
 
 # create symlinks to pkg-config scripts
-( mkdir -p ${PKG}/usr/lib${LIBDIRSUFFIX}/pkgconfig
-  cd ${PKG}/usr/lib${LIBDIRSUFFIX}/pkgconfig
-  for i in $(ls ../${PRGNAM}/${PG_VERSION}/lib/pkgconfig/*) ; do ln -sf $i ; done
+( mkdir -p "${PKG}/usr/lib${LIBDIRSUFFIX}/pkgconfig"
+  cd "${PKG}/usr/lib${LIBDIRSUFFIX}/pkgconfig"
+  for i in $(ls "../${PRGNAM}/${PG_VERSION}/lib/pkgconfig/"*) ; do ln -sf "${i}" ; done
 )
 
 # Some interesting additional modules:
@@ -143,61 +144,61 @@ make install-docs DESTDIR=${PKG}
 # postgres_fdw - foreign-data wrapper for access to external PostgreSQL servers
 # file_fdw - foreign-data wrapper for access to data files on filesystem
 
-PG_EXTENSIONS=${PG_EXTENSIONS:-"adminpack pgcrypto ltree xml2 postgres_fdw file_fdw hstore citext"}
+PG_EXTENSIONS=${PG_EXTENSIONS:-"adminpack pgcrypto ltree xml2 postgres_fdw file_fdw hstore citext pg_trgm btree_gin btree_gist"}
 
-if [ "x$PG_EXTENSIONS" = "xALL" ];then
-  cd ${TMP}/${PRGNAM}-${VERSION}/contrib
-  make all
-  make install-strip DESTDIR=${PKG}
+if [ "x${PG_EXTENSIONS}" = "xALL" ];then
+  cd "${TMP}/${PRGNAM}-${VERSION}/contrib"
+  make all -j ${NUMJOBS}
+  make install-strip DESTDIR="${PKG}"
 else
-  for ext in $PG_EXTENSIONS; do
-    cd ${TMP}/${PRGNAM}-${VERSION}/contrib/$ext
-    make
-    make install-strip DESTDIR=${PKG}
+  for ext in ${PG_EXTENSIONS}; do
+    cd "${TMP}/${PRGNAM}-${VERSION}/contrib/${ext}"
+    make -j ${NUMJOBS}
+    make install-strip DESTDIR="${PKG}"
   done
 fi
 
-cd ${TMP}/${PRGNAM}-${VERSION}
+cd "${TMP}/${PRGNAM}-${VERSION}"
 
-find ${PKG}/usr/man -type f -exec gzip -9 {} \;
-for i in $( find ${PKG}/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+find "${PKG}/usr/man" -type f -exec gzip -9 {} \;
+for i in $( find "${PKG}/usr/man" -type l ) ; do ln -s $( readlink "${i}" ).gz "${i}.gz" ; rm "${i}" ; done
 
-cp -a COPYRIGHT HISTORY README doc/KNOWN_BUGS doc/MISSING_FEATURES doc/TODO ${PKG}/usr/doc/${PRGNAM}-${VERSION}/
-rm -rf ${PKG}/usr/doc/${PRGNAM}-${VERSION}/{man.tar.gz,man1,manl,man7,postgres.tar.gz}
-cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
-cat ${CWD}/README.SBo > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/README.SBo
+cp -a COPYRIGHT HISTORY README doc/KNOWN_BUGS doc/MISSING_FEATURES doc/TODO "${PKG}/usr/doc/${PRGNAM}-${VERSION}/"
+rm -rf "${PKG}/usr/doc/${PRGNAM}-${VERSION}/"{man.tar.gz,man1,manl,man7,postgres.tar.gz}
+cat "${CWD}/${PRGNAM}.SlackBuild" > "${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild"
+cat "${CWD}/README.SBo" > "${PKG}/usr/doc/${PRGNAM}-${VERSION}/README.SBo"
 
 # base database directory
 # assumes you are using /var/lib/pgsql as a homedir for postgres user
-mkdir -p ${PKG}/var/lib/pgsql/${PG_VERSION}/data
-chown -R postgres:postgres ${PKG}/var/lib/pgsql
-chmod 700 ${PKG}/var/lib/pgsql
+mkdir -p "${PKG}/var/lib/pgsql/${PG_VERSION}/data"
+chown -R postgres:postgres "${PKG}/var/lib/pgsql"
+chmod 700 "${PKG}/var/lib/pgsql"
 # permissions for DATADIR should be u=rwx (0700)
-chmod 700 ${PKG}/var/lib/pgsql/${PG_VERSION}/data
+chmod 700 "${PKG}/var/lib/pgsql/${PG_VERSION}/data"
 
 # Install init script
-mkdir -p ${PKG}/etc/rc.d
+mkdir -p "${PKG}/etc/rc.d"
 sed -e "s%@PG_VERSION@%${PG_VERSION}%" \
-  -e "s%@PRGNAM@%${PRGNAM}%" \
-  -e "s%@PG_PORT@%${PG_PORT}%" \
-  -e "s%@LIBDIRSUFFIX@%${LIBDIRSUFFIX}%" \
-  ${CWD}/rc.${PRGNAM}.new > ${PKG}/etc/rc.d/rc.${PRGNAM}.new
-chmod 0755 ${PKG}/etc/rc.d/rc.${PRGNAM}.new
+    -e "s%@PRGNAM@%${PRGNAM}%" \
+    -e "s%@PG_PORT@%${PG_PORT}%" \
+    -e "s%@LIBDIRSUFFIX@%${LIBDIRSUFFIX}%" \
+  "${CWD}/rc.${PRGNAM}.new" > "${PKG}/etc/rc.d/rc.${PRGNAM}.new"
+chmod 0755 "${PKG}/etc/rc.d/rc.${PRGNAM}.new"
 
 # Install logrotate script
-mkdir -p ${PKG}/etc/logrotate.d
+mkdir -p "${PKG}/etc/logrotate.d"
 sed -e "s%@PG_VERSION@%${PG_VERSION}%" \
-  -e "s%@PRGNAM@%${PRGNAM}%" \
-  ${CWD}/${PRGNAM}.logrotate > ${PKG}/etc/logrotate.d/${PRGNAM}.new
+    -e "s%@PRGNAM@%${PRGNAM}%" \
+  "${CWD}/${PRGNAM}.logrotate" > "${PKG}/etc/logrotate.d/${PRGNAM}.new"
 
-mkdir -p ${PKG}/var/log/setup
+mkdir -p "${PKG}/var/log/setup"
 sed -e "s%@UID@%${PG_UID}%" \
-  -e "s%@GID@%${PG_GID}%" \
-  -e "s%@PG_VERSION@%${PG_VERSION}%" \
-  ${CWD}/setup.${PRGNAM}  > ${PKG}/var/log/setup/setup.${PRGNAM}
-chmod 755 ${PKG}/var/log/setup/setup.${PRGNAM}
+    -e "s%@GID@%${PG_GID}%" \
+    -e "s%@PG_VERSION@%${PG_VERSION}%" \
+  "${CWD}/setup.${PRGNAM}"  > "${PKG}/var/log/setup/setup.${PRGNAM}"
+chmod 755 "${PKG}/var/log/setup/setup.${PRGNAM}"
 
-mkdir -p ${PKG}/install
+mkdir -p "${PKG}/install"
 cat > "${PKG}/install/slack-desc" << EOF
 # HOW TO EDIT THIS FILE:
 # The "handy ruler" below makes it easier to edit a package description.
@@ -229,9 +230,9 @@ echo 'postgresql-client' > "${PKG}/install/slack-conficts"
 
 # Add post-install script
 sed -e "s%@PG_VERSION@%${PG_VERSION}%" \
-  -e "s%@PRGNAM@%${PRGNAM}%" \
-  -e "s%@LIBDIRSUFFIX@%${LIBDIRSUFFIX}%" \
-  ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+    -e "s%@PRGNAM@%${PRGNAM}%" \
+    -e "s%@LIBDIRSUFFIX@%${LIBDIRSUFFIX}%" \
+    "${CWD}/doinst.sh" > "${PKG}/install/doinst.sh"
 
 pushd ${PKG}
     /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-${VERSION}-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}"
@@ -249,13 +250,13 @@ if [ "${PGSQL_CLIENT_PKG}" = 'yes' ]; then
     make -C src/interfaces install-strip DESTDIR="${PKG_CLIENT}"
     make -C doc install DESTDIR="${PKG_CLIENT}"
 
-    find ${PKG_CLIENT}/usr/man -type f -exec gzip -9 {} \;
-    for i in $( find ${PKG_CLIENT}/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+    find "${PKG_CLIENT}/usr/man" -type f -exec gzip -9 {} \;
+    for i in $( find "${PKG_CLIENT}/usr/man" -type l ) ; do ln -s $( readlink "${i}" ).gz "${i}.gz" ; rm "${i}" ; done
 
-    cp -a COPYRIGHT HISTORY README doc/KNOWN_BUGS doc/MISSING_FEATURES doc/TODO ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/
-    rm -rf ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/{man.tar.gz,man1,manl,man7,postgres.tar.gz}
-    cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
-    cat ${CWD}/README.SBo > ${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/README.SBo
+    cp -a COPYRIGHT HISTORY README doc/KNOWN_BUGS doc/MISSING_FEATURES doc/TODO "${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/"
+    rm -rf "${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/"{man.tar.gz,man1,manl,man7,postgres.tar.gz}
+    cat "${CWD}/${PRGNAM}.SlackBuild" > "${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild"
+    cat "${CWD}/README.SBo" > "${PKG_CLIENT}/usr/doc/${PRGNAM}-${VERSION}/README.SBo"
 
     mkdir -p "${PKG_CLIENT}/install"
     cat > "${PKG_CLIENT}/install/slack-desc" << EOF
