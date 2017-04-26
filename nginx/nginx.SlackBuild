@@ -39,7 +39,7 @@ NUMJOBS=${NUMJOBS:-2}
 NGINX_PKG_SUFFIX=${NGINX_PKG_SUFFIX:-}
 
 MODNAM_FANCYINDEX='ngx-fancyindex'
-MODVERSION_FANCYINDEX=${MODVERSION_FANCYINDEX:-"0.4.1"}
+MODVER_FANCYINDEX=${MODVER_FANCYINDEX:-"0.4.1"}
 
 if [ -z "${ARCH}" ]; then
   case "$( uname -m )" in
@@ -109,8 +109,8 @@ fi
 
 # Enable FancyIndex
 if [ "${NGINX_ENABLE_FANCYINDEX:-no}" == "yes" ]; then
-    tar xvf "${CWD}/v${MODVERSION_FANCYINDEX}".tar.?z*
-    mv "${MODNAM_FANCYINDEX}-${MODVERSION_FANCYINDEX}" "${MODNAM_FANCYINDEX}"
+    tar xvf "${CWD}/v${MODVER_FANCYINDEX}".tar.?z*
+    mv "${MODNAM_FANCYINDEX}-${MODVER_FANCYINDEX}" "${MODNAM_FANCYINDEX}"
     chown -R root:root "${MODNAM_FANCYINDEX}"
     find -L "${MODNAM_FANCYINDEX}" \
      \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
@@ -123,7 +123,12 @@ fi
 
 # Enable ModSecurity
 if [ "${NGINX_ENABLE_MODSECURITY:-no}" == "yes" ]; then
-    NGINX_DEPS="${NGINX_DEPS},db44,expat,ncurses,openldap-client,readline,apr,apr-util,cyrus-sasl,lua,sqlite,util-linux"
+    # ModSecurity will be able to build as module starting with version 3.x
+    # - https://github.com/SpiderLabs/ModSecurity-nginx/pull/5
+    #
+    # So, I'll just leave with noop waiting for v3 to come. :)
+    #NGINX_DEPS="${NGINX_DEPS},db44,expat,ncurses,openldap-client,readline,apr,apr-util,cyrus-sasl,lua,sqlite,util-linux"
+    :
 fi
 
 # Enable RTMP
