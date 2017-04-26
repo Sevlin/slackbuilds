@@ -31,15 +31,19 @@
 
 # Special thanks to Thomas Morper for some configuration adjustments tips
 
-PRGNAM=nginx
+PRGNAM='nginx'
 VERSION=${VERSION:-1.10.3}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
-NUMJOBS=${NUMJOBS:-2}
+NUMJOBS=${NUMJOBS:-$(nproc)}
 NGINX_PKG_SUFFIX=${NGINX_PKG_SUFFIX:-}
 
 MODNAM_FANCYINDEX='ngx-fancyindex'
 MODVER_FANCYINDEX=${MODVER_FANCYINDEX:-"0.4.1"}
+MODNAM_RTMP='nginx-rtmp-module'
+MODVER_RTMP=${RTMPVERSION:-1.1.11}
+MODNAM_HEADERSMORE='headers-more-nginx-module'
+MODVER_HEADERSMORE=${HDRSMOREVERSION:-0.32}
 
 if [ -z "${ARCH}" ]; then
   case "$( uname -m )" in
@@ -133,8 +137,32 @@ fi
 
 # Enable RTMP
 if [ "${NGINX_ENABLE_RTMP:-no}" == "yes" ]; then
-   :
+    tar xvf "${CWD}/v${MODVER_RTMP}"*.tar.?z*
+    mv "${MODNAM_RTMP}-${MODVER_RTMP}" "${MODNAM_RTMP}"
+    chown -R root:root "${MODNAM_RTMP}"
+    find -L "${MODNAM_RTMP}" \
+     \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+     -exec chmod 755 {} \; -o \
+     \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+     -exec chmod 644 {} \;
+
+    NGINX_ADDMODULE="${NGINX_ADDMODULE} ${MODNAM_RTMP}"
 fi
+
+# Enable HeadersMore
+if [ "${NGINX_ENABLE_HEADERSMORE:-no}" == "yes" ]; then
+    tar xvf "${CWD}/v${MODVER_HEADERSMORE}"*.tar.?z*
+    mv "${MODNAM_HEADERSMORE}-${MODVER_HEADERSMORE}" "${MODNAM_HEADERSMORE}"
+    chown -R root:root "${MODNAM_HEADERSMORE}"
+    find -L "${MODNAM_HEADERSMORE}" \
+     \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+     -exec chmod 755 {} \; -o \
+     \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+     -exec chmod 644 {} \;
+
+    NGINX_ADDMODULE="${NGINX_ADDMODULE} ${MODNAM_HEADERSMORE}"
+fi
+
 
 # Add extra modules not included in nginx.
 if [ ! -z "${NGINX_ADDMODULE}" ]; then
@@ -257,7 +285,7 @@ mkdir -p "${PKG}/install"
 cat "${CWD}/doinst.sh" > "${PKG}/install/doinst.sh"
 
 # Add slack-desc
-cat > "${PKG}/slack-desc" << EOF
+cat > "${PKG}/install/slack-desc" << EOF
                         |-----handy-ruler------------------------------------------------------|
 nginx${NGINX_PKG_SUFFIX}: nginx (http/imap/pop3 proxy)
 nginx${NGINX_PKG_SUFFIX}:
@@ -273,7 +301,218 @@ nginx${NGINX_PKG_SUFFIX}:
 EOF
 
 # Add dependencies
-echo "${NGINX_DEPS}" > "${PKG}/slack-required"
+echo "bzip2,glib2,libjpeg-turbo,pcre,xz,zlib,expat,fontconfig,freetype,gd,harfbuzz,libX11,libXau,libXdmcp,libXpm,libgcrypt,libgpg-error,libpng,libtiff,libxcb,libxml2,libxslt,openssl-solibs|openssl,perl" >> "${PKG}/install/slack-required"
+
+if [ "${NGINX_DYNAMIC}" == "yes" ]; then
+
+  #################
+  # GeoIP package #
+  #################
+  if [ "${NGINX_ENABLE_GEOIP}" == "yes" ]; then
+    PKG_GEOIP="${TMP}/package-${PRGNAM}-mod-geoip"
+    rm -rf "${PKG_GEOIP}"
+    mkdir -p "${PKG_GEOIP}"
+
+    # Create directories
+    mkdir -p "${PKG_GEOIP}/etc/${PRGNAM}/modules" \
+             "${PKG_GEOIP}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Move shared libraries
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/nginx/modules/ngx_http_geoip_module.so" \
+       "${PKG_GEOIP}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Create configuration file
+    echo "load_module \"/usr/lib${LIBDIRSUFFIX}/nginx/ngx_http_geoip_module.so\";" \
+       > "${PKG_GEOIP}/etc/${PRGNAM}/modules/ngx-http-geoip-module.conf.new"
+
+    # Create
+    mkdir -p "${PKG_GEOIP}/install"
+
+    # Post-install script
+    cat "${CWD}/doinst.sh" > "${PKG_GEOIP}/install/doinst.sh"
+    echo "configure etc/${PRGNAM}/modules/ngx-http-geoip-module.conf.new" \
+      >> "${PKG_GEOIP}/install/doinst.sh"
+
+    # Add slack-desc
+    cat > "${PKG_GEOIP}/install/slack-desc" << EOF
+               |-----handy-ruler------------------------------------------------------|
+nginx-mod-geoip: nginx-mod-geoip (GeoIP module for Nginx)
+nginx-mod-geoip:
+nginx-mod-geoip: Module for Nginx that provides GeoIP fuctionality developed by
+nginx-mod-geoip: MaxMind.
+nginx-mod-geoip:
+nginx-mod-geoip: Homepage: http://nginx.net/
+nginx-mod-geoip: Homepage: https://www.maxmind.com/
+nginx-mod-geoip:
+nginx-mod-geoip:
+nginx-mod-geoip:
+nginx-mod-geoip:
+EOF
+
+    # Add slack-required
+    echo "nginx,GeoIP|geoip" > "${PKG_GEOIP}/install/slack-required"
+
+    pushd "${PKG_GEOIP}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-mod-geoip-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+  fi
+
+  ######################
+  # FancyIndex package #
+  ######################
+  if [ "${NGINX_ENABLE_FANCYINDEX}" == "yes" ]; then
+    PKG_FANCYINDEX="${TMP}/package-${PRGNAM}-mod-fancyindex"
+    rm -rf "${PKG_FANCYINDEX}"
+    mkdir -p "${PKG_FANCYINDEX}"
+
+    # Create directories
+    mkdir -p "${PKG_FANCYINDEX}/etc/${PRGNAM}/modules" \
+             "${PKG_FANCYINDEX}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Move shared libraries
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/nginx/modules/ngx_http_fancyindex_module.so" \
+       "${PKG_FANCYINDEX}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Create configuration file
+    echo "# load_module \"/usr/lib${LIBDIRSUFFIX}/nginx/ngx_http_fancyindex_module.so\";" \
+       > "${PKG_FANCYINDEX}/etc/${PRGNAM}/modules/ngx-http-fancyindex-module.conf.new"
+
+    # Create
+    mkdir -p "${PKG_FANCYINDEX}/install"
+
+    # Post-install script
+    cat "${CWD}/doinst.sh" > "${PKG_FANCYINDEX}/install/doinst.sh"
+    echo "configure etc/${PRGNAM}/modules/ngx-http-fancyindex-module.conf.new" \
+      >> "${PKG_FANCYINDEX}/install/doinst.sh"
+
+    # Add slack-desc
+    cat > "${PKG_FANCYINDEX}/install/slack-desc" << EOF
+                    |-----handy-ruler------------------------------------------------------|
+nginx-mod-fancyindex: nginx-mod-fancyindex (file listings beautyfier)
+nginx-mod-fancyindex:
+nginx-mod-fancyindex: The Fancy Index module makes possible the generation of file listings,
+nginx-mod-fancyindex: like the built-in autoindex module does, but adding a touch of style.
+nginx-mod-fancyindex:
+nginx-mod-fancyindex: Homepage: https://github.com/aperezdc/ngx-fancyindex
+nginx-mod-fancyindex:
+nginx-mod-fancyindex:
+nginx-mod-fancyindex:
+nginx-mod-fancyindex:
+nginx-mod-fancyindex:
+EOF
+
+    # Add slack-required
+    echo "nginx" > "${PKG_FANCYINDEX}/install/slack-required"
+
+    pushd "${PKG_FANCYINDEX}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-mod-fancyindex-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+  fi
+
+
+  ################
+  # RTMP package #
+  ################
+  if [ "${NGINX_ENABLE_RTMP}" == "yes" ]; then
+    PKG_RTMP="${TMP}/package-${PRGNAM}-mod-rtmp"
+    rm -rf "${PKG_RTMP}"
+    mkdir -p "${PKG_RTMP}"
+
+    # Create directories
+    mkdir -p "${PKG_RTMP}/etc/${PRGNAM}/modules" \
+             "${PKG_RTMP}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Move shared libraries
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/nginx/modules/ngx_rtmp_module.so" \
+       "${PKG_RTMP}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Create configuration file
+    echo "# load_module \"/usr/lib${LIBDIRSUFFIX}/nginx/ngx_rtmp_module.so\";" \
+       > "${PKG_RTMP}/etc/${PRGNAM}/modules/ngx-rtmp-module.conf.new"
+
+    # Create
+    mkdir -p "${PKG_RTMP}/install"
+
+    # Post-install script
+    cat "${CWD}/doinst.sh" > "${PKG_RTMP}/install/doinst.sh"
+    echo "configure etc/${PRGNAM}/modules/ngx-rtmp-module.conf.new" \
+      >> "${PKG_RTMP}/install/doinst.sh"
+
+    # Add slack-desc
+    cat > "${PKG_RTMP}/install/slack-desc" << EOF
+              |-----handy-ruler------------------------------------------------------|
+nginx-mod-rtmp: nginx-mod-rtmp (RTMP protocol)
+nginx-mod-rtmp:
+nginx-mod-rtmp: Module provides implementation of RTMP protocol, so you can crate
+nginx-mod-rtmp: your own Nginx-based media streaming server.
+nginx-mod-rtmp:
+nginx-mod-rtmp: Homepage: https://github.com/arut/nginx-rtmp-module
+nginx-mod-rtmp:
+nginx-mod-rtmp:
+nginx-mod-rtmp:
+nginx-mod-rtmp:
+nginx-mod-rtmp:
+EOF
+
+    # Add slack-required
+    echo "nginx" > "${PKG_RTMP}/install/slack-required"
+
+    pushd "${PKG_RTMP}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-mod-rtmp-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+  fi
+
+
+
+  # HeadersMore package
+  if [ "${NGINX_ENABLE_HEADERSMORE}" == "yes" ]; then
+    PKG_HEADERSMORE="${TMP}/package-${PRGNAM}-mod-headersmore"
+    rm -rf "${PKG_HEADERSMORE}"
+    mkdir -p "${PKG_HEADERSMORE}"
+
+    # Create directories
+    mkdir -p "${PKG_HEADERSMORE}/etc/${PRGNAM}/modules" \
+             "${PKG_HEADERSMORE}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Move shared libraries
+    mv "${PKG}/usr/lib${LIBDIRSUFFIX}/nginx/modules/ngx_http_headers_more_filter_module.so" \
+       "${PKG_HEADERSMORE}/usr/lib${LIBDIRSUFFIX}/nginx/modules"
+
+    # Create configuration file
+    echo "# load_module \"/usr/lib${LIBDIRSUFFIX}/nginx/ngx_http_headers_more_filter_module.so\";" \
+       > "${PKG_HEADERSMORE}/etc/${PRGNAM}/modules/ngx-http-headers-more-filter-module.conf.new"
+
+    # Create
+    mkdir -p "${PKG_HEADERSMORE}/install"
+
+    # Post-install script
+    cat "${CWD}/doinst.sh" > "${PKG_HEADERSMORE}/install/doinst.sh"
+    echo "# configure etc/${PRGNAM}/modules/ngx-http-headersmore-module.conf.new" \
+      >> "${PKG_HEADERSMORE}/install/doinst.sh"
+
+    # Add slack-desc
+    cat > "${PKG_HEADERSMORE}/install/slack-desc" << EOF
+                     |-----handy-ruler------------------------------------------------------|
+nginx-mod-headersmore: nginx-mod-headersmore (extended HTTP headers manipulation module)
+nginx-mod-headersmore:
+nginx-mod-headersmore: Module allowes to manipulate HTTP headers in variaty of ways, not
+nginx-mod-headersmore: just add them.
+nginx-mod-headersmore:
+nginx-mod-headersmore: Homepage: https://github.com/openresty/headers-more-nginx-module
+nginx-mod-headersmore:
+nginx-mod-headersmore:
+nginx-mod-headersmore:
+nginx-mod-headersmore:
+nginx-mod-headersmore:
+EOF
+
+    # Add slack-required
+    echo "nginx" > "${PKG_HEADERSMORE}/install/slack-required"
+
+    pushd "${PKG_HEADERSMORE}"
+        /sbin/makepkg -l y -c n "${OUTPUT}/${PRGNAM}-mod-headersmore-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}"
+    popd
+  fi
 
 # Create modules directory and config files.
 # Unfortunately, we have to use full paths rather then relative paths
@@ -282,7 +521,6 @@ echo "${NGINX_DEPS}" > "${PKG}/slack-required"
 # nginx: [emerg] dlopen() "/usr/modules/ngx_stream_module.so" failed (/usr/modules/ngx_stream_module.so: cannot open shared object file: No such file or directory) in /etc/nginx/modules/mod-stream.conf:1
 # nginx: configuration file /etc/nginx/nginx.conf test failed
 # Source: https://trac.nginx.org/nginx/ticket/961
-if [ "${NGINX_DYNAMIC}" == "yes" ]; then
   mkdir -p "${PKG}/etc/${PRGNAM}/modules"
   for module in ${PKG}/usr/lib${LIBDIRSUFFIX}/${PRGNAM}/modules/*; do
     MODULE_NAME=$(basename ${module} | sed 's|\.so||' | tr _ -)
