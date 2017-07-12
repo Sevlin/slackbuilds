@@ -1,13 +1,13 @@
 PRGNAM="nginx"
-VERSION="1.12.0"
+VERSION="1.12.1"
 HOMEPAGE="http://nginx.org/"
-DOWNLOAD['nginx']='http://nginx.org/download/nginx-1.12.0.tar.gz'
+DOWNLOAD['nginx']='http://nginx.org/download/nginx-1.12.1.tar.gz'
 DOWNLOAD['modsecurity']=https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz'
 DOWNLOAD['fancyindex']='https://github.com/aperezdc/ngx-fancyindex/archive/v0.4.1.tar.gz'
 DOWNLOAD['rtmp']='https://github.com/arut/nginx-rtmp-module/archive/v1.1.11.tar.gz'
 DOWNLOAD['headersmore']='https://github.com/openresty/headers-more-nginx-module/archive/v0.32.tar.gz'
-MD5SUM['nginx']='995eb0a140455cf0cfc497e5bd7f94b3'
-MD5SUM['modsecurity']='ecf42d21f26338443d711.12.0851628c'
+MD5SUM['nginx']='a307e74aca95403e5ee00f153807ce58'
+MD5SUM['modsecurity']='ecf42d21f26338443d711.12.1851628c'
 MD5SUM['fancyindex']='e1dd79f0ec82415bbf8a1cb938988955'
 MD5SUM['rtmp']='a87ab77c4414f80d394d712cceb39016'
 MD5SUM['headersmore']='5ce112f12afe155749e2c504997861f7'
