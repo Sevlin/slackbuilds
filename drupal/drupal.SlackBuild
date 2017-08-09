@@ -77,11 +77,6 @@ do
         && cat $CWD/$METAFILE > $PKG/install/$METAFILE
 done
 
-sed -i \
-    -e "s|%DOCROOT%|${DOCROOT#/}|g" \
-    -e "s|%CRONUSER%|${CRONUSER}|" \
-       ${PKG}/install/doinst.sh
-
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
 
