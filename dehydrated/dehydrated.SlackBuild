@@ -24,7 +24,7 @@
 
 PRGNAM=dehydrated
 VERSION=${VERSION:-0.4.0}
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-sev}
 ARCH='noarch'
 
@@ -52,7 +52,7 @@ find -L . \
 mkdir -p $PKG/usr/sbin \
          $PKG/etc/$PRGNAM \
          $PKG/etc/cron.weekly \
-         $PKG/var/www/$PRGNAM
+         $PKG/var/lib/$PRGNAM
 
 # Copy script
 install -Dm755 -t "$PKG/usr/sbin/" dehydrated
