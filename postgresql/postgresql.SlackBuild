@@ -250,6 +250,15 @@ if [ "${PGSQL_CLIENT_PKG}" = 'yes' ]; then
     make -C src/interfaces install-strip DESTDIR="${PKG_CLIENT}"
     make -C doc install DESTDIR="${PKG_CLIENT}"
 
+    # Client-only installation is missing symlinks to ELF executables in /usr/bin
+    # So, this is some kind of dirty workaround for this case
+    mkdir -p "${PKG_CLIENT}/usr/bin"
+    pushd "${PKG_CLIENT}/usr/bin"
+    for BIN_FILE in $(ls -1 "${PKG_CLIENT}/usr/lib${LIBDIRSUFFIX}/postgresql/${PG_VERSION}/bin"); do
+        ln -sf ../lib${LIBDIRSUFFIX}/postgresql/${PG_VERSION}/bin/${BIN_FILE}
+    done
+    popd
+
     find "${PKG_CLIENT}/usr/man" -type f -exec gzip -9 {} \;
     for i in $( find "${PKG_CLIENT}/usr/man" -type l ) ; do ln -s $( readlink "${i}" ).gz "${i}.gz" ; rm "${i}" ; done
 
