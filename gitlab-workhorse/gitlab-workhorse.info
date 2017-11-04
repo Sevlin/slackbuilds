@@ -1,7 +1,0 @@
-PRGNAM="gitlab-workhorse"
-VERSION="1.2.1"
-HOMEPAGE="https://gitlab.com"
-DOWNLOAD="https://gitlab.com/gitlab-org/gitlab-workhorse/repository/archive.tar.gz?ref=v1.2.1"
-MD5SUM="72cafe0e338b440ad982557c5dcb663f"
-MAINTAINER="Mykyta Solomko"
-EMAIL="sev@nix.org.ua"

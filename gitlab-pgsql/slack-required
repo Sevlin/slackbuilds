@@ -1,1 +1,0 @@
-aaa_elflibs|gcc,gmp,xz,zlib,cxxlibs|gcc-g++,icu4c,libgcrypt,libgpg-error,libssh2,libxml2,libxslt,openssl-solibs|openssl,postgresql-client|postgresql,redis,ruby2,node,ruby2gem-bundler,gitlab-shell,gitlab-workhorse,http-parser

@@ -1,7 +1,0 @@
-PRGNAM="gitlab"
-VERSION="8.16.9"
-HOMEPAGE="https://gitlab.com"
-DOWNLOAD="https://gitlab.com/gitlab-org/gitlab-ce/repository/archive.tar.gz?ref=v8.16.9"
-MD5SUM="81f548b992ea38fbbf26e2fbdeff3ae5"
-MAINTAINER="Mykyta Solomko"
-EMAIL="sev@nix.org.ua"

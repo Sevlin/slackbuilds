@@ -1,7 +1,0 @@
-PRGNAM="gitlab-shell"
-VERSION="4.1.1"
-HOMEPAGE="https://gitlab.com"
-DOWNLOAD="https://gitlab.com/gitlab-org/gitlab-shell/repository/archive.tar.gz?ref=v4.1.1"
-MD5SUM="8ea6d8948926349d97135e193fb66798"
-MAINTAINER="Mykyta Solomko"
-EMAIL="sev@nix.org.ua"
