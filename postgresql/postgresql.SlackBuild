@@ -27,7 +27,7 @@
 # Modified by the Mykyta Solomko
 
 PRGNAM="postgresql"
-VERSION=${VERSION:-"9.6.5"}
+VERSION=${VERSION:-"9.6.6"}
 BUILD=${BUILD:-1}
 TAG=${TAG:-"sev"}
 
