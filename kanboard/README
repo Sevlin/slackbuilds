@@ -1,12 +1,7 @@
-MantisBT is an open source issue tracker that provides a delicate balance 
-between simplicity and power.
-
-By default, there is only a sample config file included with the package.
-You can either copy that file and edit it according to your taste or you
-can do a graphical setup.  Both processes are detailed in the docs.
+Kanboard is project management software that focuses on the Kanban methodology.
 
 You can override DOCROOT, PHPUSER, and PHPGROUP at build time.
 They default to DOCROOT=/var/www, PHPUSER=root, PHPGROUP=apache.
 
-For configuration help, you can visit:
-http://mantisbt.org/docs/master/en-US/Admin_Guide/html-single/
+For installation help, you can visit:
+https://kanboard.net/documentation/installation
