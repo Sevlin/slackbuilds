@@ -45,8 +45,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
-cd $PRGNAM-$VERSION
+unzip $CWD/$PRGNAM-$VERSION.zip
+cd $PRGNAM
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
@@ -55,7 +55,7 @@ find . \
  -exec chmod 644 {} \;
 
 mkdir -p $PKG/$DOCROOT
-cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
+cp -a $TMP/$PRGNAM $PKG/$DOCROOT/$PRGNAM
 
 #mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 #cp -a \
