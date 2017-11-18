@@ -57,20 +57,20 @@ find . \
 mkdir -p $PKG/$DOCROOT
 cp -a $TMP/$PRGNAM $PKG/$DOCROOT/$PRGNAM
 
-#mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-#cp -a \
-#  LICENSE CREDITS DEVELOPERS FAQ HISTORY INSTALL TODO TRANSLATORS \
-#    $PKG/usr/doc/$PRGNAM-$VERSION
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  LICENSE CONTRIBUTING ChangeLog \
+    $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Change ownership and perms and create a link.
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
+chmod g+w $PKG/$DOCROOT/$PRGNAM/data
 
 mkdir -p $PKG/install
 for METAFILE in 'slack-conflicts' \
                 'slack-desc'      \
-                'slack-required'  \
-                'slack-suggests'
+                'slack-required'  
 do
     [[ -f $CWD/$METAFILE ]] \
         && cat $CWD/$METAFILE > $PKG/install/$METAFILE
