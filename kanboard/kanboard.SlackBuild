@@ -66,6 +66,7 @@ cp -a \
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
 chmod g+w $PKG/$DOCROOT/$PRGNAM/data
+chmod g+w $PKG/$DOCROOT/$PRGNAM/plugins
 
 mkdir -p $PKG/install
 for METAFILE in 'slack-conflicts' \
