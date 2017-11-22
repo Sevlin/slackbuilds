@@ -68,8 +68,8 @@ mkdir -p $PKG/$DOCROOT/$PRGNAM/files
 # Change ownership and perms and create a link.
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
 chmod 0755 $PKG/$DOCROOT/$PRGNAM
-chmod g+w $PKG/$DOCROOT/$PRGNAM/data
-chmod g+w $PKG/$DOCROOT/$PRGNAM/plugins
+chmod 0775 $PKG/$DOCROOT/$PRGNAM/data
+chmod 0775 $PKG/$DOCROOT/$PRGNAM/plugins
 chmod 0775 $PKG/$DOCROOT/$PRGNAM/files
 
 mkdir -p $PKG/install
