@@ -26,7 +26,7 @@
 PRGNAM="kanboard"
 VERSION=${VERSION:-1.0.48}
 ARCH="noarch" 	# hardcode ARCH
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-shin}
 
 DOCROOT=${DOCROOT:-/var/www}
