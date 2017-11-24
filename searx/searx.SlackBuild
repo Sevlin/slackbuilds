@@ -91,6 +91,8 @@ find -L . \
 HOME=$TMP/$PRGNAM-$VERSION \
   virtualenv -p python2 venv
 HOME=$TMP/$PRGNAM-$VERSION \
+  ./venv/bin/pip install --upgrade pip setuptools
+HOME=$TMP/$PRGNAM-$VERSION \
   ./venv/bin/pip install --upgrade -r requirements.txt
 HOME=$TMP/$PRGNAM-$VERSION \
    virtualenv -p python2 --relocatable venv
