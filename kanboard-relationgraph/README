@@ -1,7 +1,1 @@
-Kanboard is project management software that focuses on the Kanban methodology.
-
-You can override DOCROOT, PHPUSER, and PHPGROUP at build time.
-They default to DOCROOT=/var/www, PHPUSER=root, PHPGROUP=apache.
-
-For installation help, you can visit:
-https://kanboard.net/documentation/installation
+Relation Graph Plugin for Kanboard.
