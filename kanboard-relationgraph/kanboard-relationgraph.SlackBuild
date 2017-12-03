@@ -23,21 +23,25 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM="kanboard"
-VERSION=${VERSION:-1.0.48}
+PRGNAM="kanboard-relationgraph"
+VERSION=${VERSION:-0.1.3}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-2}
 TAG=${TAG:-shin}
 
-DOCROOT=${DOCROOT:-/var/www}
-
-PHPUSER=${PHPUSER:-root}
-PHPGROUP=${PHPGROUP:-apache}
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+DOCROOT=${DOCROOT:-/var/www/kanboard/plugins}
 
 set -eu
 
@@ -45,36 +49,28 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-unzip $CWD/$PRGNAM-$VERSION.zip
-cd $PRGNAM
-chown -R ${PHPUSER}:${PHPGROUP} .
-find . \
- \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 -o -perm 644 \) \
- -exec chmod 644 {} \;
+unzip $CWD/$VERSION.zip
+cd $VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 mkdir -p $PKG/$DOCROOT
 cp -a $TMP/$PRGNAM $PKG/$DOCROOT/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  LICENSE CONTRIBUTING ChangeLog \
+  LICENSE \
     $PKG/usr/doc/$PRGNAM-$VERSION
-
-# Create directroy for user-attached files
-mkdir -p $PKG/$DOCROOT/$PRGNAM/files
 
 # Change ownership and perms and create a link.
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
-chmod 0755 $PKG/$DOCROOT/$PRGNAM
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/data
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/plugins
-chmod 0775 $PKG/$DOCROOT/$PRGNAM/files
 
 mkdir -p $PKG/install
-for METAFILE in 'slack-conflicts' \
-                'slack-desc'      \
+for METAFILE in 'slack-desc'      \
                 'slack-required'  
 do
     [[ -f $CWD/$METAFILE ]] \
