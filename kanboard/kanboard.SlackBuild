@@ -26,7 +26,7 @@
 PRGNAM="kanboard"
 VERSION=${VERSION:-1.1.1}
 ARCH="noarch" 	# hardcode ARCH
-BUILD=${BUILD:-2}
+BUILD=${BUILD:-1}
 TAG=${TAG:-shin}
 
 DOCROOT=${DOCROOT:-/var/www}
@@ -45,8 +45,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-unzip $CWD/$PRGNAM-$VERSION.zip
-cd $PRGNAM
+tar xvf $CWD/v$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
@@ -55,11 +55,11 @@ find . \
  -exec chmod 644 {} \;
 
 mkdir -p $PKG/$DOCROOT
-cp -a $TMP/$PRGNAM $PKG/$DOCROOT/$PRGNAM
+cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  LICENSE CONTRIBUTING ChangeLog \
+  LICENSE ChangeLog \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Create directroy for user-attached files
@@ -75,7 +75,7 @@ chmod 0775 $PKG/$DOCROOT/$PRGNAM/files
 mkdir -p $PKG/install
 for METAFILE in 'slack-conflicts' \
                 'slack-desc'      \
-                'slack-required'  
+                'slack-required'
 do
     [[ -f $CWD/$METAFILE ]] \
         && cat $CWD/$METAFILE > $PKG/install/$METAFILE
