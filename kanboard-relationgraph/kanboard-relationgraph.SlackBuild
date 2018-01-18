@@ -43,7 +43,7 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DOCROOT=${DOCROOT:-/var/www/kanboard/plugins}
+DOCROOT=${DOCROOT:-/var/www/kanboard}
 PHPUSER=${PHPUSER:-root}
 PHPGROUP=${PHPGROUP:-apache}
 
@@ -63,8 +63,8 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p $PKG/$DOCROOT
-cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
+mkdir -p $PKG/$DOCROOT/plugins
+cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/plugins/$SRCNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
