@@ -72,7 +72,7 @@ cp -a \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 # Change ownership and perms and create a link.
-chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
+chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT
 
 mkdir -p $PKG/install
 for METAFILE in 'slack-desc'      \
