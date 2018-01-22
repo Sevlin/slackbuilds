@@ -6,13 +6,13 @@
 # customary to leave one space after the ':'.
 
                       |-----handy-ruler------------------------------------------------------|
-kanboard-relationgraph: Relation Graph Plugin for Kanboard (Relation Graph for Kanboard)
+kanboard-relationgraph: Coverimage Plugin for Kanboard (Coverimage for Kanboard)
 kanboard-relationgraph:
-kanboard-relationgraph: Show relations between tasks using a graph library. 
+kanboard-relationgraph: This plugin adds a coverimage function to the board.
 kanboard-relationgraph: 
 kanboard-relationgraph:
 kanboard-relationgraph: Official website: 
-kanboard-relationgraph: https://github.com/xavividal/kanboard-plugin-relationgraph
+kanboard-relationgraph: https://github.com/BlueTeck/kanboard_plugin_coverimage
 kanboard-relationgraph:
 kanboard-relationgraph:
 kanboard-relationgraph:
