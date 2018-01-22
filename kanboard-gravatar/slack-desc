@@ -6,13 +6,13 @@
 # customary to leave one space after the ':'.
 
                       |-----handy-ruler------------------------------------------------------|
-kanboard-relationgraph: Relation Graph Plugin for Kanboard (Relation Graph for Kanboard)
+kanboard-relationgraph: Gravatar Plugin for Kanboard (Gravatar for Kanboard)
 kanboard-relationgraph:
-kanboard-relationgraph: Show relations between tasks using a graph library. 
+kanboard-relationgraph: Enable Gravatar for Kanboard users. 
 kanboard-relationgraph: 
 kanboard-relationgraph:
 kanboard-relationgraph: Official website: 
-kanboard-relationgraph: https://github.com/xavividal/kanboard-plugin-relationgraph
+kanboard-relationgraph: https://github.com/kanboard/plugin-gravatar
 kanboard-relationgraph:
 kanboard-relationgraph:
 kanboard-relationgraph:
