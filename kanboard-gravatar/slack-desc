@@ -5,15 +5,15 @@
 # make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':'.
 
-                      |-----handy-ruler------------------------------------------------------|
-kanboard-relationgraph: Gravatar Plugin for Kanboard (Gravatar for Kanboard)
-kanboard-relationgraph:
-kanboard-relationgraph: Enable Gravatar for Kanboard users. 
-kanboard-relationgraph: 
-kanboard-relationgraph:
-kanboard-relationgraph: Official website: 
-kanboard-relationgraph: https://github.com/kanboard/plugin-gravatar
-kanboard-relationgraph:
-kanboard-relationgraph:
-kanboard-relationgraph:
-kanboard-relationgraph:
+                 |-----handy-ruler------------------------------------------------------|
+kanboard-gravatar: Gravatar Plugin for Kanboard (Gravatar for Kanboard)
+kanboard-gravatar:
+kanboard-gravatar: Enable Gravatar for Kanboard users.
+kanboard-gravatar:
+kanboard-gravatar:
+kanboard-gravatar: Official website:
+kanboard-gravatar: https://github.com/kanboard/plugin-gravatar
+kanboard-gravatar:
+kanboard-gravatar:
+kanboard-gravatar:
+kanboard-gravatar:
