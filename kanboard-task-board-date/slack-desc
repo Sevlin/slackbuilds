@@ -5,15 +5,15 @@
 # make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':'.
 
-                   |-----handy-ruler------------------------------------------------------|
-kanboard-coverimage: Task board date Plugin for Kanboard (task board date for Kanboard)
-kanboard-coverimage:
-kanboard-coverimage: This plugin adds a date field for tasks to define the visibility on
-kanboard-coverimage: the board and dashboard.
-kanboard-coverimage:
-kanboard-coverimage: Official website:
-kanboard-coverimage: https://github.com/kanboard/plugin-task-board-date
-kanboard-coverimage:
-kanboard-coverimage:
-kanboard-coverimage:
-kanboard-coverimage:
+                        |-----handy-ruler------------------------------------------------------|
+kanboard-task-board-date: Task board date Plugin for Kanboard (task board date for Kanboard)
+kanboard-task-board-date:
+kanboard-task-board-date: This plugin adds a date field for tasks to define the visibility on
+kanboard-task-board-date: the board and dashboard.
+kanboard-task-board-date:
+kanboard-task-board-date: Official website:
+kanboard-task-board-date: https://github.com/kanboard/plugin-task-board-date
+kanboard-task-board-date:
+kanboard-task-board-date:
+kanboard-task-board-date:
+kanboard-task-board-date:
