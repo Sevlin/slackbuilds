@@ -6,13 +6,13 @@
 # customary to leave one space after the ':'.
 
                    |-----handy-ruler------------------------------------------------------|
-kanboard-coverimage: Coverimage Plugin for Kanboard (Coverimage for Kanboard)
+kanboard-coverimage: Task board date Plugin for Kanboard (task board date for Kanboard)
 kanboard-coverimage:
-kanboard-coverimage: This plugin adds a coverimage function to the board.
-kanboard-coverimage:
+kanboard-coverimage: This plugin adds a date field for tasks to define the visibility on
+kanboard-coverimage: the board and dashboard.
 kanboard-coverimage:
 kanboard-coverimage: Official website:
-kanboard-coverimage: https://github.com/BlueTeck/kanboard_plugin_coverimage
+kanboard-coverimage: https://github.com/kanboard/plugin-task-board-date
 kanboard-coverimage:
 kanboard-coverimage:
 kanboard-coverimage:
