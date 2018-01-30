@@ -66,6 +66,7 @@ find -L . \
 mkdir -p $PKG/$DOCROOT/plugins
 chmod 0775 $PKG/$DOCROOT/plugins
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/plugins/$SRCNAM
+find $PKG/$DOCROOT/ -type f \( -name '.git*' -or -name '.travis.yml' \) -delete
 
 # Change ownership and perms and create a link.
 chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT
