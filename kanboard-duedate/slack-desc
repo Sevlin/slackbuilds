@@ -5,15 +5,15 @@
 # make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':'.
 
-                 |-----handy-ruler------------------------------------------------------|
-kanboard-gravatar: Gravatar Plugin for Kanboard (Gravatar for Kanboard)
-kanboard-gravatar:
-kanboard-gravatar: Enable Gravatar for Kanboard users.
-kanboard-gravatar:
-kanboard-gravatar:
-kanboard-gravatar: Official website:
-kanboard-gravatar: https://github.com/kanboard/plugin-gravatar
-kanboard-gravatar:
-kanboard-gravatar:
-kanboard-gravatar:
-kanboard-gravatar:
+                |-----handy-ruler------------------------------------------------------|
+kanboard-duedate: Due date sorting Plugin for Kanboard (Duedate for Kanboard)
+kanboard-duedate:
+kanboard-duedate: Enable sorting columns by due date for Kanboard.
+kanboard-duedate:
+kanboard-duedate:
+kanboard-duedate: Official website:
+kanboard-duedate: https://github.com/dmorlitz/kanboard-duedate
+kanboard-duedate:
+kanboard-duedate:
+kanboard-duedate:
+kanboard-duedate:
