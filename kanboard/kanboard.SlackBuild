@@ -3,8 +3,13 @@
 # Slackware package build script for Kanboard
 # Home Page https://kanboard.net/
 
-# Copyright 2017 Anatolii Zarudnyi, Kyiv, Ukraine, <shin (at) nix.org.ua>
+# Copyright 2017-2018 Anatolii Zarudnyi, Kyiv, Ukraine, <shin (at) nix.org.ua>
+# Copyright 2018 Mykyta Solomko, Kyiv, Ukraine, <sev (at) nix.org.ua>
+# Copyright 2018 Vladyslav Glinsky, Kyiv, Ukraine, <cl0ne (at) mithril.org.ua>
 # All rights reserved.
+#
+# Modified by Mykyta Solomko.
+# Ukrainian locale by Vladyslav Glinsky.
 #
 # Redistribution and use of this script, with or without modification, is
 # permitted provided that the following conditions are met:
@@ -26,7 +31,7 @@
 PRGNAM="kanboard"
 VERSION=${VERSION:-1.2.0}
 ARCH="noarch" 	# hardcode ARCH
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-shin}
 
 DOCROOT=${DOCROOT:-/var/www}
@@ -56,6 +61,12 @@ find . \
 
 mkdir -p $PKG/$DOCROOT
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
+
+# Add Ukrainian locale
+# This block will be removed, when patch is accepted to upstream
+pushd $PKG/$DOCROOT/$PRGNAM
+  cat $CWD/uk_UA.patch | patch -p1
+popd
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
