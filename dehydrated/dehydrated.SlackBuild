@@ -52,7 +52,7 @@ find -L . \
 mkdir -p $PKG/usr/sbin \
          $PKG/etc/$PRGNAM \
          $PKG/etc/cron.weekly \
-         $PKG/var/lib/$PRGNAM
+         $PKG/var/www/$PRGNAM
 
 # Copy script
 install -Dm755 -t "$PKG/usr/sbin/" dehydrated
