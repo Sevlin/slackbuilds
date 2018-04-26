@@ -3,7 +3,7 @@
 # Slackware package build script for Thunderbird lables (RoundCube plug-in)
 # Home Page http://code.google.com/p/rcmail-thunderbird-labels/
 
-# Copyright 2014 Mykyta Solomko, Kyiv, Ukraine, <sev (at) nix.org.ua>
+# Copyright 2014-2018 Mykyta Solomko, Kyiv, Ukraine, <sev (at) nix.org.ua>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -23,13 +23,13 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM="thunderbird_labels"
-VERSION=${VERSION:-1.0.0}
+PRGNAM="roundcube-thunderbird_labels"
+VERSION=${VERSION:-1.1.4}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
-DOCROOT="/var/www/webapps"
+DOCROOT="/var/www"
 RCROOT="${DOCROOT}/roundcubemail"
 
 PHPUSER=${PHPUSER:-root}
@@ -46,8 +46,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
-cd $PRGNAM
+tar xvf $CWD/v$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
@@ -58,31 +58,50 @@ find . \
 mv config.inc.php config.inc.php.new
 
 mkdir -p ${PKG}/${RCROOT}/plugins
-cp -a ${TMP}/${PRGNAM} ${PKG}/${RCROOT}/plugins/${PRGNAM}
+cp -a ${TMP}/${PRGNAM}-${VERSION} ${PKG}/${RCROOT}/plugins/thunderbird_labels
 
 install -o ${PHPUSER}   \
         -g ${PHPGROUP}  \
         -m 644 -v       \
         ${CWD}/htaccess \
-        ${PKG}/${RCROOT}/plugins/${PRGNAM}/.htaccess.new
+        ${PKG}/${RCROOT}/plugins/thunderbird_labels/.htaccess.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a Changelog README \
+cp -a Changelog LICENSE.md README.md \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 mkdir -p $PKG/install
 sed -e "s,%RCROOT%,${RCROOT#?},g" \
-    -e "s,%PRGNAM%,${PRGNAM},g"  \
     ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
 
-for METAFILE in 'slack-conflicts' \
-                'slack-desc'      \
-                'slack-required'  \
-                'slack-suggests'
-do
-    [[ -f $CWD/$METAFILE ]] \
-        && cat $CWD/$METAFILE > $PKG/install/$METAFILE
-done
+# Add slack-desc
+cat > "${PKG}/install/slack-desc" << EOF
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+                            |-----handy-ruler------------------------------------------------------|
+roundcube-thunderbird_labels: Thunderbird Labes (RoundCube plug-in)
+roundcube-thunderbird_labels:
+roundcube-thunderbird_labels: Plug-in provides support of Mozilla Thunderbird's IMAP flags
+roundcube-thunderbird_labels: such as Work, Personal, ToDo, etc.
+roundcube-thunderbird_labels:
+roundcube-thunderbird_labels: Don't forget to add 'thunderbird_labels' to \$rcmail_config['plugins']
+roundcube-thunderbird_labels: in main.inc.php.
+roundcube-thunderbird_labels:
+roundcube-thunderbird_labels: Homepage: https://github.com/mike-kfed/roundcube-thunderbird_labels
+roundcube-thunderbird_labels:
+roundcube-thunderbird_labels:
+EOF
+
+# Add slack-required
+echo "roundcubemail" > "${PKG}/install/slack-required"
+
+# Add slack-conflicts
+echo "thunderbird_labels" > "${PKG}/install/slack-conflicts"
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

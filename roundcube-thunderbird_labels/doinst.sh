@@ -10,6 +10,6 @@ config() {
   # Otherwise, we leave the .new copy for the admin to consider...
 }
 
-config %RCROOT%/plugins/%PRGNAM%/config.inc.php.new
-config %RCROOT%/plugins/%PRGNAM%/.htaccess.new
+config %RCROOT%/plugins/thunderbird_labels/config.inc.php.new
+config %RCROOT%/plugins/thunderbird_labels/.htaccess.new
 
