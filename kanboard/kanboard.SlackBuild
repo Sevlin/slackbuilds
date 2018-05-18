@@ -29,7 +29,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="kanboard"
-VERSION=${VERSION:-1.2.3}
+VERSION=${VERSION:-1.2.4}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-1}
 TAG=${TAG:-shin}
@@ -61,12 +61,6 @@ find . \
 
 mkdir -p $PKG/$DOCROOT
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
-
-# Add Ukrainian locale
-# This block will be removed, when patch is accepted to upstream
-pushd $PKG/$DOCROOT/$PRGNAM
-  cat $CWD/uk_UA.patch | patch -p1
-popd
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
