@@ -3,7 +3,7 @@
 # Slackware package build script for Kanboard
 # Home Page https://kanboard.net/
 
-# Copyright 2017-2018 Anatolii Zarudnyi, Kyiv, Ukraine, <shin (at) nix.org.ua>
+# Copyright 2017-2019 Anatolii Zarudnyi, Kyiv, Ukraine, <shin (at) nix.org.ua>
 # Copyright 2018 Mykyta Solomko, Kyiv, Ukraine, <sev (at) nix.org.ua>
 # Copyright 2018 Vladyslav Glinsky, Kyiv, Ukraine, <cl0ne (at) mithril.org.ua>
 # All rights reserved.
@@ -29,7 +29,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="kanboard"
-VERSION=${VERSION:-1.2.5}
+VERSION=${VERSION:-1.2.8}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-1}
 TAG=${TAG:-shin}
