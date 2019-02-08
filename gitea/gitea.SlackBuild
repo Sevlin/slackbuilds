@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=gitea
-VERSION=${VERSION:-1.7.0}
+VERSION=${VERSION:-1.7.1}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -95,8 +95,8 @@ mkdir -p ${PKG}/usr/bin \
          ${PKG}/var/lib/gitea/{custom,data,indexers,public,log}
 
 chown root:${GITEAUSER} ${PKG}/etc/gitea
-chown ${GITEAUSER}:${GITEAGROUP} ${PKG}/var/lib/gitea \
-                                 ${PKG}/var/run/gitea
+chown -R ${GITEAUSER}:${GITEAGROUP} ${PKG}/var/lib/gitea \
+                                    ${PKG}/var/run/gitea
 chmod 750 ${PKG}/etc/gitea \
           ${PKG}/var/lib/gitea/{data,indexers,log}
 
