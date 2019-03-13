@@ -50,7 +50,7 @@ rm -rf ${SRCNAM}
 git clone https://github.com/levito/tt-rss-feedly-theme
 cd ${SRCNAM}
 VERSION="$(git rev-parse HEAD)"
-VERSION="$(date +%Y%m%d).${VERSION:0:7}.git"
+VERSION="2.0.0.$(date +%Y%m%d).${VERSION:0:7}.git"
 rm -rf .git* feedly-screenshots/
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
