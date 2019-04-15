@@ -25,7 +25,7 @@
 
 PRGNAM="kanboard-moon"
 SRCNAM="Moon"
-VERSION=${VERSION:-v1.3.6}
+VERSION=${VERSION:-v1.3.7}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-1}
 TAG=${TAG:-shin}
@@ -57,6 +57,7 @@ unzip $CWD/$SRCNAM-$VERSION.zip
 mv $SRCNAM $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
 chown -R root:root .
+rm -rf ./.git
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
   -o -perm 511 \) -exec chmod 755 {} \; -o \
