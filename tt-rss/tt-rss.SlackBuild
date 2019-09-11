@@ -24,7 +24,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="tt-rss"
-VERSION=${VERSION:-17.4}
+VERSION=${VERSION:-19.8}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -72,7 +72,7 @@ chmod 0775 $PKG/$DOCROOT/$PRGNAM/cache \
            $PKG/$DOCROOT/$PRGNAM/cache/images \
            $PKG/$DOCROOT/$PRGNAM/cache/upload \
            $PKG/$DOCROOT/$PRGNAM/cache/export \
-           $PKG/$DOCROOT/$PRGNAM/cache/js \
+           $PKG/$DOCROOT/$PRGNAM/cache/feeds \
            $PKG/$DOCROOT/$PRGNAM/feed-icons \
            $PKG/$DOCROOT/$PRGNAM/lock
 

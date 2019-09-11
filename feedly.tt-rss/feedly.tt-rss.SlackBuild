@@ -26,7 +26,7 @@
 PRGNAM="feedly.tt-rss"
 SRCNAM="tt-rss-feedly-theme"
 STYLENAME="feedly"
-VERSION="git"
+VERSION="2.3.1"
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -47,10 +47,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf ${SRCNAM}
-git clone https://github.com/levito/tt-rss-feedly-theme
-cd ${SRCNAM}
-VERSION="$(git rev-parse HEAD)"
-VERSION="$(date +%Y%m%d).${VERSION:0:7}.git"
+tar xvf ${CWD}/v${VERSION}.tar.?z*
+cd ${SRCNAM}-${VERSION}
 rm -rf .git* feedly-screenshots/
 chown -R ${PHPUSER}:${PHPGROUP} .
 find . \
@@ -64,7 +62,7 @@ mv  README.md \
     $PKG/usr/doc/$PRGNAM-$VERSION
 
 mkdir -p $PKG/$STYLEROOT
-cp -a $TMP/$SRCNAM/* $PKG/$STYLEROOT/
+cp -a $TMP/${SRCNAM}-${VERSION}/feedly* $PKG/$STYLEROOT/
 
 mkdir -p $PKG/install
 for METAFILE in 'slack-conflicts' \
