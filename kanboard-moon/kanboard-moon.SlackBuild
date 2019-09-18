@@ -25,7 +25,7 @@
 
 PRGNAM="kanboard-moon"
 SRCNAM="Moon"
-VERSION=${VERSION:-v1.3.7}
+VERSION=${VERSION:-v1.4.0}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-1}
 TAG=${TAG:-shin}
