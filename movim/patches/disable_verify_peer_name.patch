@@ -1,0 +1,12 @@
+diff --git a/linker.php b/linker.php
+index 81bc0ee6f..59716db3d 100644
+--- a/linker.php
++++ b/linker.php
+@@ -199,6 +199,7 @@ $xmppBehaviour = function (React\Socket\Connection $stream) use (&$xmppSocket, $
+                 stream_context_set_option($xmppSocket->stream, 'ssl', 'SNI_enabled', false);
+                 stream_context_set_option($xmppSocket->stream, 'ssl', 'peer_name', $session->get('host'));
+                 stream_context_set_option($xmppSocket->stream, 'ssl', 'allow_self_signed', true);
++                stream_context_set_option($xmppSocket->stream, 'ssl', 'verify_peer_name', false);
+ 
+                 // See http://php.net/manual/en/function.stream-socket-enable-crypto.php#119122
+                 $crypto_method = STREAM_CRYPTO_METHOD_TLS_CLIENT;
