@@ -25,7 +25,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="movim"
-VERSION=${VERSION:-0.16}
+VERSION=${VERSION:-0.16.1}
 ARCH="noarch" 	# hardcode ARCH
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -49,16 +49,13 @@ rm -rf $PRGNAM-$VERSION
 tar xvf $CWD/v$VERSION.tar.?z*
 cd $PRGNAM-$VERSION
 
-patch -p1 < ${CWD}/patches/SQL_DATE.patch
-
 if [ "${MOVIM_DISABLE_TLS_PEER_NAME_VALIDATION:-no}" == 'yes' ]; then
     patch -p1 < ${CWD}/patches/disable_verify_peer_name.patch
 fi
 
-wget https://getcomposer.org/composer.phar
 XDG_CACHE_HOME="${TMP}/composer_cache" \
-php composer.phar install --no-interaction --no-dev --no-suggest
-rm -f composer.phar
+composer install --no-interaction --no-dev --no-suggest
+
 find . \
  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 -o -perm 755 \) \
  -exec chmod 755 {} \; -o \
