@@ -24,7 +24,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM="roundcubemail"
-VERSION=${VERSION:-1.2.9}
+VERSION=${VERSION:-1.4.1}
 ARCH="noarch"
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
@@ -68,7 +68,7 @@ sed -i \
 cp -a $TMP/$PRGNAM-$VERSION $PKG/$DOCROOT/$PRGNAM
 
 chown $PHPUSER:$PHPGROUP $PKG/var/{log,tmp}/$PRGNAM
-chmod 0755 $PKG/var/{log,tmp}/$PRGNAM
+chmod 0775 $PKG/var/{log,tmp}/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
