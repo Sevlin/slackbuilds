@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=gitea
-VERSION=${VERSION:-1.11.1}
+VERSION=${VERSION:-1.11.3}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -85,8 +85,8 @@ pushd "${GOPATH}/src/code.gitea.io/gitea"
     # This hack is taken from Gentoo's gitea.ebuild 
     sed -i -e "s/\"main.Version.*$/\"main.Version=${VERSION}\"/"  Makefile
 
-    TAGS="bindata" \
-    make generate build
+    TAGS="bindata sqlite sqlite_unlock_notify" \
+    make build
 popd
 
 mkdir -p ${PKG}/usr/bin \
