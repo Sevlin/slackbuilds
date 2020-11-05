@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+
+# Slackware build script for Woodpecker agent
+
+# Copyright 2019-2020, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=woodpecker-agent
+SRCNAM=woodpecker
+VERSION=${VERSION:-0.11.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-sev}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/build/${ARCH}}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+DRONEUSER=${DRONEUSER:-woodpecker}
+DRONEGROUP=${DRONEGROUP:-woodpecker}
+DRONEUID=${DRONEUID:-508}
+DRONEGID=${DRONEGID:-508}
+
+set -e # Exit on most errors
+
+# Check if the woodpecker user and group exist. If not, then bail.
+if ! grep -q "^${DRONEGROUP}:" /etc/group ; then
+    echo "  You must have a \"${DRONEGROUP}\" group to run this script."
+    echo "    # groupadd -g ${DRONEGID} ${DRONEGROUP}"
+    exit 1
+fi
+
+if ! grep -q "^${DRONEUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${DRONEUSER}\" user to run this script."
+    echo "    # useradd -u ${DRONEUID} -g ${DRONEGROUP} -d /var/lib/woodpecker -s /usr/bin/false -c \"User for Woodpecker\" ${DRONEUSER}"
+    exit 1
+fi
+
+rm -rf ${PKG}
+mkdir -p ${TMP} ${PKG} ${OUTPUT}
+cd ${TMP}
+rm -rf ${SRCNAM}-${VERSION}
+tar xvf ${CWD}/v${VERSION}.tar.?z*
+cd ${SRCNAM}-${VERSION}
+
+export GOPATH="$(pwd)/.gopath"
+export PATH="${GOPATH}/bin:${PATH}"
+mkdir -p "${GOPATH}"
+
+mkdir -p ${GOPATH}/src/github.com/laszlocph
+cd ${GOPATH}/src/github.com/laszlocph
+ln -sf ../../../../ woodpecker
+
+cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
+go get -v ./...
+go build -v -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
+
+# Create woodpecker-agent package
+mkdir -p ${PKG}/usr/bin
+
+install -m755 release/woodpecker-agent -t ${PKG}/usr/bin/
+
+# Strip binaries and libraries
+find ${PKG} -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Copy program documentation into the package
+mkdir -p ${PKG}/usr/doc/${PRGNAM}-${VERSION}
+cp -a \
+  LICENSE README.md \
+  ${PKG}/usr/doc/$PRGNAM-$VERSION
+cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
+
+mkdir -p ${PKG}/install
+# slack-desc
+cat > ${PKG}/install/slack-desc << EOF
+                |-----handy-ruler------------------------------------------------------|
+woodpecker-agent: Woodpecker (continuous delivery platform agent)
+woodpecker-agent:
+woodpecker-agent: Woodpecker is a Continuous Delivery platform built on Docker,
+woodpecker-agent: written in Go
+woodpecker-agent:
+woodpecker-agent: Homepage: https://woodpecker.laszlo.cloud/
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
+EOF
+
+# doinst.sh
+sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \
+    -e "s|%DRONEGROUP%|${DRONEGROUP}|g" \
+    -e "s|%DRONEUID%|${DRONEUID}|g" \
+    -e "s|%DRONEGID%|${DRONEGID}|g" \
+    ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+
+cd ${PKG}
+/sbin/makepkg -l y -c n ${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}
