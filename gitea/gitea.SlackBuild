@@ -2,7 +2,7 @@
 
 # Slackware build script for Gitea
 
-# Copyright 2019, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# Copyright 2019-2020, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -23,22 +23,31 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=gitea
-VERSION=${VERSION:-1.11.8}
+VERSION=${VERSION:-1.13.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i486 ;;
-    arm*) ARCH=arm ;;
-    # Unless $ARCH is already set, use uname -m for all other archs:
+    i?86) 
+        ARCH=i686
+        SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+    ;;
+    x86_64)
+        ARCH=x86_64
+        SLKCFLAGS="-O2 -fPIC"
+    ;;
+    arm*)
+        ARCH=arm
+        SLKCFLAGS="-O2 -fPIC"
+    ;;
        *) ARCH=$( uname -m ) ;;
   esac
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/build/${ARCH}}
+TMP=${TMP:-/tmp/build}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
@@ -66,14 +75,18 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
+mkdir -p $PRGNAM-$VERSION
 tar xvf $CWD/v$VERSION.tar.?z*
 cd $PRGNAM-$VERSION
 chown -R root:root .
 
 export GOPATH="$(pwd)/.gopath"
+export GOCACHE="${GOPATH}/cache"
 export PATH="${GOPATH}/bin:${PATH}"
-mkdir -p "${GOPATH}/src/code.gitea.io"
-go get -u github.com/jteeuwen/go-bindata/
+mkdir -p "${GOPATH}/src/code.gitea.io" \
+         "${GOCACHE}"
+#go get -u github.com/jteeuwen/go-bindata/
+#go get -u github.com/shuLhan/go-bindata/
 
 pushd "${GOPATH}/src/code.gitea.io"
     ln -sf ../../../ "${GOPATH}/src/code.gitea.io/gitea"
@@ -85,8 +98,23 @@ pushd "${GOPATH}/src/code.gitea.io/gitea"
     # This hack is taken from Gentoo's gitea.ebuild 
     sed -i -e "s/\"main.Version.*$/\"main.Version=${VERSION}\"/"  Makefile
 
-    TAGS="bindata sqlite sqlite_unlock_notify" \
-    make build
+    export CGO_CFLAGS="${SLKCFLAGS}"
+    export CGO_CPPFLAGS="${SLKCFLAGS}"
+    export CGO_CXXFLAGS="${SLKCFLAGS}"
+
+    _GITEA_TAGS=(
+        bindata
+        sqlite
+        sqlite_unlock_notify
+    )
+
+    _GITEA_SETTINGS=(
+        "-X code.gitea.io/gitea/modules/setting.CustomConf=/etc/gitea/app.ini"
+        "-X code.gitea.io/gitea/modules/setting.AppWorkPath=/var/lib/gitea"
+    )
+
+    LDFLAGS="-linkmode external -extldflags \"${LDFLAGS}\" ${_GITEA_SETTINGS[*]}"
+    make TAGS="${_GITEA_TAGS[*]}" EXTRA_GOFLAGS="-buildmode=pie -trimpath -modcacherw" -j1 build
 popd
 
 mkdir -p ${PKG}/usr/bin \
@@ -109,7 +137,7 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
 # Copy program documentation into the package
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  CHANGELOG.md CONTRIBUTING.md MAINTAINERS README.md custom/conf/app.ini.sample \
+  CHANGELOG.md CONTRIBUTING.md MAINTAINERS README.md custom/conf/app.example.ini \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
