@@ -22,9 +22,15 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Changelog
+#==========
+# * 2020.11.03 - copied from drone-server SlackBuild
+# * 2020.11.05 - version 0.11.0
+# * 2020.12.01 - version 0.12.0
+
 PRGNAM=woodpecker-server
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.11.0}
+VERSION=${VERSION:-0.12.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
