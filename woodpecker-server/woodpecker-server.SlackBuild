@@ -2,7 +2,7 @@
 
 # Slackware build script for Woodpecker server
 
-# Copyright 2019-2020, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
+# Copyright 2019-2021, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -27,10 +27,11 @@
 # * 2020.11.03 - copied from drone-server SlackBuild
 # * 2020.11.05 - version 0.11.0
 # * 2020.12.01 - version 0.12.0
+# * 2021.04.15 - version 0.13.0-rc.3
 
 PRGNAM=woodpecker-server
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.12.0}
+VERSION=${VERSION:-0.13.0-rc.3}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -134,4 +135,4 @@ sed -e "s|%WOODPECKERUSER%|${WOODPECKERUSER}|g" \
     ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
 
 cd ${PKG}
-/sbin/makepkg -l y -c n ${OUTPUT}/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}
+/sbin/makepkg -l y -c n ${OUTPUT}/${PRGNAM}-${VERSION/-/_}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}
