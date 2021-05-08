@@ -87,7 +87,7 @@ ln -sf ../../../../ woodpecker
 
 cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
 go get -v ./...
-go build -v -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
+go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
 
 # Create woodpecker-agent package
 mkdir -p ${PKG}/usr/bin

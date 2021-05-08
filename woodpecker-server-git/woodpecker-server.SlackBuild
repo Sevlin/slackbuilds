@@ -28,10 +28,11 @@
 # * 2020.11.05 - version 0.11.0
 # * 2020.12.01 - version 0.12.0
 # * 2021.04.15 - version 0.13.0-rc.3
+# * 2021.05.07 - git version
 
 PRGNAM=woodpecker-server
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.13.0-rc.3}
+VERSION=$(date +%Y%m%d)
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -49,6 +50,8 @@ CWD=$(pwd)
 TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+
+BUILD_GIT=${BUILD_GIT:-no}
 
 WOODPECKERUSER=${WOODPECKERUSER:-woodpecker}
 WOODPECKERGROUP=${WOODPECKERGROUP:-woodpecker}
@@ -73,9 +76,13 @@ fi
 rm -rf ${PKG}
 mkdir -p ${TMP} ${PKG} ${OUTPUT}
 cd ${TMP}
-rm -rf ${SRCNAM}-${VERSION}
-tar xvf ${CWD}/v${VERSION}.tar.?z*
-cd ${SRCNAM}-${VERSION}
+rm -rf ${SRCNAM}
+git clone --recursive https://github.com/laszlocph/woodpecker
+cd ${SRCNAM}
+
+# Override version
+VERSION_GIT="$(git rev-parse HEAD)"
+VERSION="${VERSION}.${VERSION_GIT:0:8}.git"
 
 export GOPATH="$(pwd)/.gopath"
 export PATH="${GOPATH}/bin:${PATH}"

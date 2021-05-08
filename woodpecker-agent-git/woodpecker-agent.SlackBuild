@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Slackware build script for Woodpecker server
+# Slackware build script for Woodpecker agent
 
 # Copyright 2019-2021, Mykyta Solomko <sev@nix.org.ua>, Kyiv, Ukraine
 # All rights reserved.
@@ -24,14 +24,15 @@
 
 # Changelog
 #==========
-# * 2020.11.03 - copied from drone-server SlackBuild
+# * 2020.11.03 - copied from drone-agent SlackBuild
 # * 2020.11.05 - version 0.11.0
 # * 2020.12.01 - version 0.12.0
 # * 2021.04.15 - version 0.13.0-rc.3
+# * 2021.05.07 - git version
 
-PRGNAM=woodpecker-server
+PRGNAM=woodpecker-agent
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.13.0-rc.3}
+VERSION=$(date +%Y%m%d)
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -50,32 +51,36 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-WOODPECKERUSER=${WOODPECKERUSER:-woodpecker}
-WOODPECKERGROUP=${WOODPECKERGROUP:-woodpecker}
-WOODPECKERUID=${WOODPECKERUID:-508}
-WOODPECKERGID=${WOODPECKERGID:-508}
+DRONEUSER=${DRONEUSER:-woodpecker}
+DRONEGROUP=${DRONEGROUP:-woodpecker}
+DRONEUID=${DRONEUID:-508}
+DRONEGID=${DRONEGID:-508}
 
 set -e # Exit on most errors
 
 # Check if the woodpecker user and group exist. If not, then bail.
-if ! grep -q "^${WOODPECKERGROUP}:" /etc/group ; then
-    echo "  You must have a \"${WOODPECKERGROUP}\" group to run this script."
-    echo "    # groupadd -g ${WOODPECKERGID} ${WOODPECKERGROUP}"
+if ! grep -q "^${DRONEGROUP}:" /etc/group ; then
+    echo "  You must have a \"${DRONEGROUP}\" group to run this script."
+    echo "    # groupadd -g ${DRONEGID} ${DRONEGROUP}"
     exit 1
 fi
 
-if ! grep -q "^${WOODPECKERUSER}:" /etc/passwd ; then
-    echo "  You must have a \"${WOODPECKERUSER}\" user to run this script."
-    echo "    # useradd -u ${WOODPECKERUID} -g ${WOODPECKERGROUP} -d /var/lib/woodpecker -s /usr/bin/false -c \"User for Woodpecker\" ${WOODPECKERUSER}"
+if ! grep -q "^${DRONEUSER}:" /etc/passwd ; then
+    echo "  You must have a \"${DRONEUSER}\" user to run this script."
+    echo "    # useradd -u ${DRONEUID} -g ${DRONEGROUP} -d /var/lib/woodpecker -s /usr/bin/false -c \"User for Woodpecker\" ${DRONEUSER}"
     exit 1
 fi
 
 rm -rf ${PKG}
 mkdir -p ${TMP} ${PKG} ${OUTPUT}
 cd ${TMP}
-rm -rf ${SRCNAM}-${VERSION}
-tar xvf ${CWD}/v${VERSION}.tar.?z*
-cd ${SRCNAM}-${VERSION}
+rm -rf ${SRCNAM}
+git clone --recursive https://github.com/laszlocph/woodpecker
+cd ${SRCNAM}
+
+# Override version
+VERSION_GIT="$(git rev-parse HEAD)"
+VERSION="${VERSION}.${VERSION_GIT:0:8}.git"
 
 export GOPATH="$(pwd)/.gopath"
 export PATH="${GOPATH}/bin:${PATH}"
@@ -87,17 +92,12 @@ ln -sf ../../../../ woodpecker
 
 cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
 go get -v ./...
-go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-server github.com/laszlocph/woodpecker/cmd/drone-server
+go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
 
-# Create woodpecker-server package
-mkdir -p ${PKG}/usr/bin \
-         ${PKG}/var/lib/woodpecker
+# Create woodpecker-agent package
+mkdir -p ${PKG}/usr/bin
 
-chown ${WOODPECKERUSER}:${WOODPECKERGROUP} ${PKG}/var/lib/woodpecker
-
-chmod 750 ${PKG}/var/lib/woodpecker
-
-install -m755 release/woodpecker-server -t ${PKG}/usr/bin/
+install -m755 release/woodpecker-agent -t ${PKG}/usr/bin/
 
 # Strip binaries and libraries
 find ${PKG} -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
@@ -113,25 +113,25 @@ cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.
 mkdir -p ${PKG}/install
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
-                 |-----handy-ruler------------------------------------------------------|
-woodpecker-server: Woodpecker (continuous delivery platform server)
-woodpecker-server:
-woodpecker-server: Woodpecker is a Continuous Delivery platform built on Docker,
-woodpecker-server: written in Go
-woodpecker-server:
-woodpecker-server: Homepage: https://woodpecker.laszlo.cloud/
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
+                |-----handy-ruler------------------------------------------------------|
+woodpecker-agent: Woodpecker (continuous delivery platform agent)
+woodpecker-agent:
+woodpecker-agent: Woodpecker is a Continuous Delivery platform built on Docker,
+woodpecker-agent: written in Go
+woodpecker-agent:
+woodpecker-agent: Homepage: https://woodpecker.laszlo.cloud/
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
+woodpecker-agent:
 EOF
 
 # doinst.sh
-sed -e "s|%WOODPECKERUSER%|${WOODPECKERUSER}|g" \
-    -e "s|%WOODPECKERGROUP%|${WOODPECKERGROUP}|g" \
-    -e "s|%WOODPECKERUID%|${WOODPECKERUID}|g" \
-    -e "s|%WOODPECKERGID%|${WOODPECKERGID}|g" \
+sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \
+    -e "s|%DRONEGROUP%|${DRONEGROUP}|g" \
+    -e "s|%DRONEUID%|${DRONEUID}|g" \
+    -e "s|%DRONEGID%|${DRONEGID}|g" \
     ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
 
 cd ${PKG}
