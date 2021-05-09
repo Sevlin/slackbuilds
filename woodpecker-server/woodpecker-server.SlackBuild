@@ -96,7 +96,7 @@ go get -v ./...
 # and rebuild front-end
 if [[ ${WOODPECKER_DARK_TERM} == yes ]]; then
     go get github.com/bradrydzewski/togo
-    cat ${CWD}/dark-term.patch | patch -p1 --verbose --ignore-whitespace || exit 1
+    patch -p1 --verbose < ${CWD}/dark-term.patch
     pushd web/
         yarn install
         yarn build
