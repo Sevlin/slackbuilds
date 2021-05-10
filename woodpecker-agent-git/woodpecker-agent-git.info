@@ -1,4 +1,4 @@
-PRGNAM="woodpecker-server"
+PRGNAM="woodpecker-agent-git"
 VERSION="git"
 HOMEPAGE="https://woodpecker.io/"
 DOWNLOAD="https://github.com/laszlocph/woodpecker/"

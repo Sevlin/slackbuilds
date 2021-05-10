@@ -30,8 +30,10 @@
 # * 2021.04.15 - version 0.13.0-rc.3
 # * 2021.05.07 - git version
 # * 2021.05.09 - dark terminal patch
+# * 2021.05.10 - dark terminal patch accepted into upstream
+# * 2021.05.11 - renamed package
 
-PRGNAM=woodpecker-server
+PRGNAM=woodpecker-server-git
 SRCNAM=woodpecker
 VERSION=$(date +%Y%m%d)
 BUILD=${BUILD:-1}
@@ -98,18 +100,14 @@ cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
 # Get dependencies
 go get -v ./...
 
-# Apply patch for dark terminal
-# and rebuild front-end
-if [[ ${WOODPECKER_DARK_TERM} == yes ]]; then
-    go get github.com/bradrydzewski/togo
-    patch -p1 --verbose < ${CWD}/dark-term.patch
-    pushd web/
-        yarn install
-        yarn build
-        go generate ./...
-        go install ./...
-    popd
-fi
+# Build front-end
+go get github.com/bradrydzewski/togo
+pushd web/
+    yarn install
+    yarn build
+    go generate ./...
+    go install ./...
+popd
 
 # Build server
 go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-server github.com/laszlocph/woodpecker/cmd/drone-server
@@ -136,21 +134,25 @@ cp -a \
 cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
 
 mkdir -p ${PKG}/install
+
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
-                 |-----handy-ruler------------------------------------------------------|
-woodpecker-server: Woodpecker (continuous delivery platform server)
-woodpecker-server:
-woodpecker-server: Woodpecker is a Continuous Delivery platform built on Docker,
-woodpecker-server: written in Go
-woodpecker-server:
-woodpecker-server: Homepage: https://woodpecker.laszlo.cloud/
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
-woodpecker-server:
+                     |-----handy-ruler------------------------------------------------------|
+woodpecker-server-git: Woodpecker (continuous delivery platform server)
+woodpecker-server-git:
+woodpecker-server-git: Woodpecker is a Continuous Delivery platform built on Docker,
+woodpecker-server-git: written in Go
+woodpecker-server-git:
+woodpecker-server-git: Homepage: https://woodpecker.laszlo.cloud/
+woodpecker-server-git:
+woodpecker-server-git:
+woodpecker-server-git:
+woodpecker-server-git:
+woodpecker-server-git:
 EOF
+
+# slack-conflicts
+echo 'woodpecker-server' > ${PKG}/install/slack-conflicts
 
 # doinst.sh
 sed -e "s|%WOODPECKERUSER%|${WOODPECKERUSER}|g" \

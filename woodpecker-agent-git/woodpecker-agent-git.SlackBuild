@@ -29,8 +29,9 @@
 # * 2020.12.01 - version 0.12.0
 # * 2021.04.15 - version 0.13.0-rc.3
 # * 2021.05.07 - git version
+# * 2021.05.11 - renamed package
 
-PRGNAM=woodpecker-agent
+PRGNAM=woodpecker-agent-git
 SRCNAM=woodpecker
 VERSION=$(date +%Y%m%d)
 BUILD=${BUILD:-1}
@@ -111,21 +112,25 @@ cp -a \
 cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
 
 mkdir -p ${PKG}/install
+
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
-                |-----handy-ruler------------------------------------------------------|
-woodpecker-agent: Woodpecker (continuous delivery platform agent)
-woodpecker-agent:
-woodpecker-agent: Woodpecker is a Continuous Delivery platform built on Docker,
-woodpecker-agent: written in Go
-woodpecker-agent:
-woodpecker-agent: Homepage: https://woodpecker.laszlo.cloud/
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
+                    |-----handy-ruler------------------------------------------------------|
+woodpecker-agent-git: Woodpecker (continuous delivery platform agent)
+woodpecker-agent-git:
+woodpecker-agent-git: Woodpecker is a Continuous Delivery platform built on Docker,
+woodpecker-agent-git: written in Go
+woodpecker-agent-git:
+woodpecker-agent-git: Homepage: https://woodpecker.laszlo.cloud/
+woodpecker-agent-git:
+woodpecker-agent-git:
+woodpecker-agent-git:
+woodpecker-agent-git:
+woodpecker-agent-git:
 EOF
+
+# slack-conflicts
+echo 'woodpecker-agent' > ${PKG}/install/slack-conflictsslack-conflicts
 
 # doinst.sh
 sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \

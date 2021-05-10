@@ -28,6 +28,7 @@
 # * 2020.11.05 - version 0.11.0
 # * 2020.12.01 - version 0.12.0
 # * 2021.04.15 - version 0.13.0-rc.3
+# * 2021.05.11 - added slack-conflicts
 
 PRGNAM=woodpecker-agent
 SRCNAM=woodpecker
@@ -106,6 +107,7 @@ cp -a \
 cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
 
 mkdir -p ${PKG}/install
+
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
                 |-----handy-ruler------------------------------------------------------|
@@ -121,6 +123,9 @@ woodpecker-agent:
 woodpecker-agent:
 woodpecker-agent:
 EOF
+
+# slack-conflicts
+echo 'woodpecker-agent' > ${PKG}/install/slack-conflicts
 
 # doinst.sh
 sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \

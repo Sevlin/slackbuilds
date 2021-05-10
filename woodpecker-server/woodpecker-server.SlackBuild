@@ -29,6 +29,7 @@
 # * 2020.12.01 - version 0.12.0
 # * 2021.04.15 - version 0.13.0-rc.3
 # * 2021.05.09 - dark terminal patch
+# * 2021.05.11 - added slack-conflicts file
 
 PRGNAM=woodpecker-server
 SRCNAM=woodpecker
@@ -130,6 +131,7 @@ cp -a \
 cat ${CWD}/${PRGNAM}.SlackBuild > ${PKG}/usr/doc/${PRGNAM}-${VERSION}/${PRGNAM}.SlackBuild
 
 mkdir -p ${PKG}/install
+
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
                  |-----handy-ruler------------------------------------------------------|
@@ -145,6 +147,9 @@ woodpecker-server:
 woodpecker-server:
 woodpecker-server:
 EOF
+
+# slack-conflicts
+echo 'woodpecker-server-git' > ${PKG}/install/slack-conflicts
 
 # doinst.sh
 sed -e "s|%WOODPECKERUSER%|${WOODPECKERUSER}|g" \
