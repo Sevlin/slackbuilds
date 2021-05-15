@@ -130,7 +130,7 @@ woodpecker-agent-git:
 EOF
 
 # slack-conflicts
-echo 'woodpecker-agent' > ${PKG}/install/slack-conflictsslack-conflicts
+echo 'woodpecker-agent' > ${PKG}/install/slack-conflicts
 
 # doinst.sh
 sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \

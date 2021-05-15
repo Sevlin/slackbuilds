@@ -24,15 +24,11 @@
 
 # Changelog
 #==========
-# * 2020.11.03 - copied from drone-agent SlackBuild
-# * 2020.11.05 - version 0.11.0
-# * 2020.12.01 - version 0.12.0
-# * 2021.04.15 - version 0.13.0-rc.3
-# * 2021.05.11 - added slack-conflicts
+# * 2021.05.15 - git version
 
-PRGNAM=woodpecker-agent
+PRGNAM=woodpecker-cli-git
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.13.0-rc.3}
+VERSION=$(date +%Y%m%d)
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -51,32 +47,16 @@ TMP=${TMP:-/tmp/build/${ARCH}}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DRONEUSER=${DRONEUSER:-woodpecker}
-DRONEGROUP=${DRONEGROUP:-woodpecker}
-DRONEUID=${DRONEUID:-508}
-DRONEGID=${DRONEGID:-508}
-
-set -e # Exit on most errors
-
-# Check if the woodpecker user and group exist. If not, then bail.
-if ! grep -q "^${DRONEGROUP}:" /etc/group ; then
-    echo "  You must have a \"${DRONEGROUP}\" group to run this script."
-    echo "    # groupadd -g ${DRONEGID} ${DRONEGROUP}"
-    exit 1
-fi
-
-if ! grep -q "^${DRONEUSER}:" /etc/passwd ; then
-    echo "  You must have a \"${DRONEUSER}\" user to run this script."
-    echo "    # useradd -u ${DRONEUID} -g ${DRONEGROUP} -d /var/lib/woodpecker -s /usr/bin/false -c \"User for Woodpecker\" ${DRONEUSER}"
-    exit 1
-fi
-
 rm -rf ${PKG}
 mkdir -p ${TMP} ${PKG} ${OUTPUT}
 cd ${TMP}
-rm -rf ${SRCNAM}-${VERSION}
-tar xvf ${CWD}/v${VERSION}.tar.?z*
-cd ${SRCNAM}-${VERSION}
+rm -rf ${SRCNAM}
+git clone --recursive https://github.com/laszlocph/woodpecker
+cd ${SRCNAM}
+
+# Override version
+VERSION_GIT="$(git rev-parse HEAD)"
+VERSION="${VERSION}.${VERSION_GIT:0:8}.git"
 
 export GOPATH="$(pwd)/.gopath"
 export PATH="${GOPATH}/bin:${PATH}"
@@ -88,12 +68,12 @@ ln -sf ../../../../ woodpecker
 
 cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
 go get -v ./...
-go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-agent github.com/laszlocph/woodpecker/cmd/drone-agent
+go build -ldflags '-extldflags "-static" -X main.Version='"${VERSION}" -v -o release/woodpecker-cli github.com/laszlocph/woodpecker/cli/drone
 
-# Create woodpecker-agent package
+# Create woodpecker-cli package
 mkdir -p ${PKG}/usr/bin
 
-install -m755 release/woodpecker-agent -t ${PKG}/usr/bin/
+install -m755 release/woodpecker-cli -t ${PKG}/usr/bin/
 
 # Strip binaries and libraries
 find ${PKG} -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
@@ -110,29 +90,22 @@ mkdir -p ${PKG}/install
 
 # slack-desc
 cat > ${PKG}/install/slack-desc << EOF
-                |-----handy-ruler------------------------------------------------------|
-woodpecker-agent: Woodpecker (continuous delivery platform agent)
-woodpecker-agent:
-woodpecker-agent: Woodpecker is a Continuous Delivery platform built on Docker,
-woodpecker-agent: written in Go
-woodpecker-agent:
-woodpecker-agent: Homepage: https://woodpecker.laszlo.cloud/
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
-woodpecker-agent:
+                  |-----handy-ruler------------------------------------------------------|
+woodpecker-cli-git: Woodpecker CLI (continuous delivery platform CLI tools)
+woodpecker-cli-git:
+woodpecker-cli-git: Woodpecker CLI command line tools are used to interact with the
+woodpecker-cli-git: Drone from the command line, and provide important utilities for
+woodpecker-cli-git: managing users and repository settings.
+woodpecker-cli-git:
+woodpecker-cli-git: Homepage: https://woodpecker.laszlo.cloud/
+woodpecker-cli-git:
+woodpecker-cli-git:
+woodpecker-cli-git:
+woodpecker-cli-git:
 EOF
 
 # slack-conflicts
-echo 'woodpecker-agent-git' > ${PKG}/install/slack-conflicts
-
-# doinst.sh
-sed -e "s|%DRONEUSER%|${DRONEUSER}|g" \
-    -e "s|%DRONEGROUP%|${DRONEGROUP}|g" \
-    -e "s|%DRONEUID%|${DRONEUID}|g" \
-    -e "s|%DRONEGID%|${DRONEGID}|g" \
-    ${CWD}/doinst.sh > ${PKG}/install/doinst.sh
+echo 'woodpecker-cli' > ${PKG}/install/slack-conflicts
 
 cd ${PKG}
 /sbin/makepkg -l y -c n ${OUTPUT}/${PRGNAM}-${VERSION/-/_}-${ARCH}-${BUILD}${TAG}.${PKGTYPE:-txz}
