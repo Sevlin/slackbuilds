@@ -1,0 +1,167 @@
+#!/bin/sh
+
+# Slackware build script for FreeCAD
+
+# Copyright 2010-2012 Niels Horn, Rio de Janeiro, RJ, Brazil
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Maintained by David Spencer <baildon.research@googlemail.com>
+# Maintained by Mykyta Solomko <sev@nix.org.ua>
+
+# Changelog:
+# - 2021.02.18 - 0.18.5
+# - 2020.03.01 - 0.18.6
+
+PRGNAM=FreeCAD
+VERSION=${VERSION:-0.18.6}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Patch to fix boost header include according to https://github.com/FreeCAD/FreeCAD/commit/200c7c7e00d569ed9f00e06c9d9751a27fa67c2d#diff-b3a49ec758b2fdfb5ee0069b6c113f656133a89cabc0ae789398b41c3295aa57
+patch -Np1 -i $CWD/addBoostHeaders-200c7c7.patch
+
+# Patch to fix a build failure with latest opencascade. Directly use std::cout instead of custom streams.
+# Cherrypick from: https://github.com/FreeCAD/FreeCAD/commit/063515f65007c116c4c0e05c1fcf82637b8bf152
+patch -Np1 -i $CWD/fd9cdb9de9d06ebd8dc1ce26c99e4e4eb005ca43.patch
+
+# Patch to disable message indicator for OpenCASCADE 7.5.0
+# https://github.com/FreeCAD/FreeCAD/commit/fd9cdb9de9d06ebd8dc1ce26c99e4e4eb005ca43
+patch -Np1 -i $CWD/c378eb81e7c2e7ad3744cf25873b2d98077106f6.patch
+
+# Patch for AddonManager to use gitmodules instead of parsing github html page
+# https://github.com/FreeCAD/FreeCAD/commit/5e51288bf6a3d62fa70e36d75b270ddecfd7ab09
+#patch -Np1 -i $CWD/5e51288bf6a3d62fa70e36d75b270ddecfd7ab09.patch
+
+# Taken from ArcLinux's FreeCAD PKGBUILD
+# https://github.com/archlinux/svntogit-community/blob/packages/freecad/trunk/PKGBUILD
+#
+# Fix missing "std::" qualifiers, sledge hammer style
+find . \
+  ! -wholename "*/Mod/Sketcher/*" \
+  ! -wholename "*/Mod/PartDesign/*" \
+  -name "*.cpp" -type f \
+  -exec sed -i '1i using namespace std;' {} \;
+
+# Taken from ArcLinux's FreeCAD PKGBUILD
+# https://github.com/archlinux/svntogit-community/blob/packages/freecad/trunk/PKGBUILD
+#
+# Add missing include
+#sed -i '1i \#include <Inventor\/SbByteBuffer.h>' \
+#  Gui/Quarter/QuarterWidget.cpp
+
+# SBo's OpenCASCADE 6.9.1 includes were in /opt/OpenCASCADE, but for 7.3.0
+# the includes are in /usr/include/opencascade, so let's accept either :)
+if [ -d /usr/include/opencascade ]; then
+  occinc=/usr/include/opencascade
+elif [ -d /opt/OpenCASCADE/inc ]; then
+  occinc=/opt/OpenCASCADE/inc
+  # However, 6.9.1's libs are in /usr/lib${LIBDIRSUFFIX} just like 7.3.0
+  # (see OCC_LIBRARY below)
+else
+  echo "OpenCASCADE include directory was not found"
+  exit 1
+fi
+
+mkdir build
+cd build
+  cmake .. \
+    -DBUILD_ENABLE_CXX_STD=C++14 \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/opt/$PRGNAM \
+    -DDOCDIR=/usr/doc/$PRGNAM-$VERSION \
+    -DOCC_INCLUDE_DIR:PATH=$occinc \
+    -DOCC_LIBRARY:PATH=/usr/lib${LIBDIRSUFFIX} \
+    -DRESOURCEDIR=/opt/$PRGNAM/share/data \
+    -DBUILD_FEM=OFF \
+    -DOCCT_CMAKE_FALLBACK=ON \
+    -DCMAKE_BUILD_TYPE=Release
+  make
+  make install DESTDIR=$PKG
+cd ..
+
+# create links in /usr/bin
+mkdir -p $PKG/usr/bin
+ln -s /opt/FreeCAD/bin/FreeCADCmd $PKG/usr/bin/FreeCADCmd
+ln -s /opt/FreeCAD/bin/FreeCAD $PKG/usr/bin/FreeCAD
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Copy icon, desktop file and mime info
+mkdir -p $PKG/usr/share/applications $PKG/usr/share/pixmaps $PKG/usr/share/mime/packages
+cp $PKG/opt/$PRGNAM/data/freecad.xpm $PKG/usr/share/pixmaps/
+cat $CWD/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+cat $CWD/$PRGNAM.xml > $PKG/usr/share/mime/packages/$PRGNAM.xml
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  README.md ChangeLog.txt \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
