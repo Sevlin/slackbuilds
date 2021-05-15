@@ -1,0 +1,12 @@
+PRGNAM="OpenCASCADE"
+VERSION="7.5.0"
+HOMEPAGE="https://www.opencascade.com/"
+# Download example:
+# wget "https://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/tags/V7_5_0;sf=tgz" -O occt-V7_5_0.tar.gz
+DOWNLOAD="https://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/tags/V7_5_0;sf=tgz"
+MD5SUM="c3085cc8da488a645e90da8be7aff1b6"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES="VTK"
+MAINTAINER="David Spencer"
+EMAIL="baildon.research@googlemail.com"
