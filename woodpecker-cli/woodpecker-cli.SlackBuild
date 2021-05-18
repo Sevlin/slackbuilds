@@ -25,10 +25,11 @@
 # Changelog
 #==========
 # * 2021.05.15 - version 0.13.0-rc.3
+# * 2021.05.18 - version 0.13.0
 
 PRGNAM=woodpecker-cli
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.13.0-rc.3}
+VERSION=${VERSION:-0.13.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 

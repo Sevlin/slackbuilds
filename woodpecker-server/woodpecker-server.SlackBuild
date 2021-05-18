@@ -30,10 +30,11 @@
 # * 2021.04.15 - version 0.13.0-rc.3
 # * 2021.05.09 - dark terminal patch
 # * 2021.05.11 - added slack-conflicts file
+# * 2021.05.18 - version 0.13.0
 
 PRGNAM=woodpecker-server
 SRCNAM=woodpecker
-VERSION=${VERSION:-0.13.0-rc.3}
+VERSION=${VERSION:-0.13.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-sev}
 
@@ -93,18 +94,14 @@ cd "${GOPATH}/src/github.com/laszlocph/woodpecker"
 # Get dependencies
 go get -v ./...
 
-# Apply patch for dark terminal
-# and rebuild front-end
-if [[ ${WOODPECKER_DARK_TERM} == yes ]]; then
-    go get github.com/bradrydzewski/togo
-    patch -p1 --verbose < ${CWD}/dark-term.patch
-    pushd web/
-        yarn install
-        yarn build
-        go generate ./...
-        go install ./...
-    popd
-fi
+# Build frontend
+go get github.com/bradrydzewski/togo
+pushd web/
+    yarn install
+    yarn build
+    go generate ./...
+    go install ./...
+popd
 
 # Build server
 go build -ldflags '-extldflags "-static" -X github.com/laszlocph/woodpecker/version.Version='"${VERSION}" -v -o release/woodpecker-server github.com/laszlocph/woodpecker/cmd/drone-server
